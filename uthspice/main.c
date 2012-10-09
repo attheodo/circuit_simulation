@@ -14,7 +14,7 @@
 #include <errno.h>
 
 // various definitions
-#define MAX_TOKENS_IN_LINE 7
+#define MAX_TOKENS_IN_LINE 8
 #define MAX_TOKEN_LEN      10
 
 // data structures and type definitions
@@ -22,10 +22,20 @@ struct element {
     
 	char *element_name;
 	int element_type;
-    char *positive_node;
-	char *negative_node;
-	char *model_type;
-	char *area;
+    char *first_terminal;
+	char *second_terminal;
+    
+    char *drain_terminal;
+    char *gate_terminal;
+    char *source_terminal;
+    char *bulk_terminal;
+	
+    char *model_name;
+    
+    double gate_length;
+    double gate_width;
+	
+    char *area;
 	
     double value;
     
@@ -145,13 +155,27 @@ void print_elements_parsed() {
     
     for(current_element = list_head->next_element; current_element->next_element != NULL; current_element = current_element->next_element){
         
-        printf("\t%s: %s +: %s -: %s    model_name: %s   area: %s   value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->positive_node,current_element->negative_node,current_element->model_type,current_element->area,current_element->value);
+        // printing non-transistor element
+        if(current_element->element_type != elementTypeBJTTransistor && current_element->element_type != elementTypeMOSTransistor){
+            
+            printf("\t%s: %s terminal_1: %s terminal_2: %s value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->value);
+        }
+        // print transistor element
+        else {
+            printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %f gate_width: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
+
+        }
         
     }
+    if(current_element->element_type != elementTypeBJTTransistor && current_element->element_type != elementTypeMOSTransistor){
+        printf("\t%s: %s terminal_1: %s terminal_2: %s value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->value);
+
+    } else {
+         printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %f gate_width: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
+    }
+    //printf("\t%s: %s terminal_1: %s terminal_2: %s    model_name: %s   area: %s   value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->model_name,current_element->area,current_element->value);
     
-    printf("\t%s: %s +: %s -: %s    model_name: %s   area: %s   value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->positive_node,current_element->negative_node,current_element->model_type,current_element->area,current_element->value);
-    
-}
+}   
 
 // prints a simple help message
 void print_help(const char *name)
@@ -274,9 +298,16 @@ int main(int argc, const char * argv[])
             
             if(atoi(tokens[1]) == 0 || atoi(tokens[1]) == 0) didParseGroundNode = true;
             
-            element_node->positive_node = tokens[1];
-            element_node->negative_node = tokens[2];
+            element_node->first_terminal = tokens[1];
+            element_node->second_terminal = tokens[2];
             element_node->value = atof(tokens[3]);
+            
+            element_node->drain_terminal = tokens[1];
+            element_node->gate_terminal = tokens[2];
+            element_node->source_terminal = tokens[3];
+            element_node->bulk_terminal = tokens[4];
+            element_node->gate_length = atof(tokens[6]+2);
+            element_node->gate_width = atof(tokens[7]+2);
             
             
             line_number++;
