@@ -167,13 +167,15 @@ void print_elements_parsed() {
         }
         
     }
+    
+    // last element of list
     if(current_element->element_type != elementTypeBJTTransistor && current_element->element_type != elementTypeMOSTransistor){
         printf("\t%s: %s terminal_1: %s terminal_2: %s value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->value);
 
     } else {
          printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %.10f gate_width: %.10f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
     }
-    //printf("\t%s: %s terminal_1: %s terminal_2: %s    model_name: %s   area: %s   value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->model_name,current_element->area,current_element->value);
+   
     
 }   
 
