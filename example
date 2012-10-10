@@ -1,0 +1,15 @@
+*                                               Revised: Tuesday, October 09, 2012
+* C:\USERS\ARIS\DESKTOP\TEST.DSN                Revision: 
+* 
+* 
+* 
+R1 2 1 450
+R3 3 5 10e4
+L1 6 3 10e-6
+R5 3 0 640
+C1 0 4 2e-12
+C2 0 5 2e-12
+D1 0 2 0
+
+M1 5 4 0 0 model L=45e-9 W=1e-6
+

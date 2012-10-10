@@ -162,7 +162,7 @@ void print_elements_parsed() {
         }
         // print transistor element
         else {
-            printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %f gate_width: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
+            printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %.10f gate_width: %.10f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
 
         }
         
@@ -171,7 +171,7 @@ void print_elements_parsed() {
         printf("\t%s: %s terminal_1: %s terminal_2: %s value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->value);
 
     } else {
-         printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %f gate_width: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
+         printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %.10f gate_width: %.10f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
     }
     //printf("\t%s: %s terminal_1: %s terminal_2: %s    model_name: %s   area: %s   value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->model_name,current_element->area,current_element->value);
     
@@ -249,16 +249,16 @@ int main(int argc, const char * argv[])
             char **tokens = NULL;
             
             // if line is a comment or empty line, skip it
-            if((strncmp(line, "*",1) == 0) || line_length == 1) {
+            if((strncmp(line, "*",1) == 0) || line_length <= 2) {
                line_number++;
+                
                 continue;
             }
             
             // remove newline character from the end
             line[strlen(line)-1] = 0;
             
-
-            //printf("[Line: %d] %s (%zu)\n",line_number,line,line_length);
+            
 
             tokens = tokenize(line);
             
@@ -289,7 +289,8 @@ int main(int argc, const char * argv[])
             
             if(element_type_for_string(tokens[0][0])  == -1){
             
-                printf("[!] Encountered element of uknown type (line: %d)\n",line_number);
+                
+                printf("[!] Encountered element of uknown type: %s (line: %d)\n",tokens[0],line_number);
                 exit(-1);
 
             } else {
