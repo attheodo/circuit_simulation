@@ -20,10 +20,10 @@
 // data structures and type definitions
 struct element {
     
-	char *element_name;
-	int element_type;
+    char *element_name;
+    int element_type;
     char *first_terminal;
-	char *second_terminal;
+    char *second_terminal;
     
     char *drain_terminal;
     char *gate_terminal;
@@ -39,7 +39,7 @@ struct element {
 	
     double value;
     
-	struct element *next_element;
+    struct element *next_element;
     
 };
 
