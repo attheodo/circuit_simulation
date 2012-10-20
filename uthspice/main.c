@@ -16,16 +16,24 @@
 #include "uthash.h"
 #include "utlist.h"
 #include "types.h"
-#include "helpers.h"
-#include "mna.h"
 
 bool db_info = true;
 
 // circuit properties
-int numof_circuit_nodes = 0;
+struct node_data *nodes_hashtable;
+
+int numof_circuit_nodes         = 0;
+int numof_indie_voltage_sources = 0;
+
+// MNA Tables
+double **g_table;
 
 // list head that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;
+
+
+#include "helpers.h"
+#include "mna.h"
 
 
 // prints a simple help message
@@ -126,11 +134,31 @@ int main(int argc, const char * argv[])
     // print the elements parsed
     print_elements_parsed(head);
     
-    int numof_circuit_nodes = numberOfNodes(head);
+        
+    numof_circuit_nodes = numberOfNodes(head,nodes_hashtable);
+    numof_indie_voltage_sources = numOfIndependentVoltageSources(head);
     
-    if(db_info) printf("\n[-] Circuit has %d nodes without the ground node\n",numof_circuit_nodes);
+    if(DEBUG){
+        struct node_data *s;
+        printf("\n");
+        for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
+            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
+        }
+        
+    }
+
+    if(DEBUG) printf("\n[-] Circuit has %d nodes without the ground node.\n",numof_circuit_nodes);
+    if(DEBUG) printf("[-] Circuit has %d independant Voltage sources.\n",numof_indie_voltage_sources);
     
+    // Initialize G Table
+    g_table = (double **)malloc(numof_circuit_nodes * sizeof(double *));
+    for(int i=0; i < numof_circuit_nodes; i++){
+        g_table[i] = (double *)malloc(numof_circuit_nodes * sizeof(double));
+    }
+
+    calculate_g_table(g_table,head,nodes_hashtable,numof_circuit_nodes,numof_indie_voltage_sources);
     
+   // printf("%f\n",g_table[0][0]);
     
     return 0;
 }

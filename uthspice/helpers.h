@@ -5,7 +5,6 @@
 //
 //
 
-
 // takes an element_type (int) and returns
 // it's type as a human readable string
 char *name_of_element_for_type(element_type i){
@@ -121,5 +120,35 @@ void print_elements_parsed(element *parsed_elements) {
     
 }
 
+int generate_uniqueid(char *string){
+    
+    char *endptr;
+    int value = (int)strtol(string, &endptr, 10);
+    
+    // node is alphanumeric
+    if (endptr == string) {
+        
+        return string[0]+string[1]+string[3];
+    
+    // return the proper int value form the numeric string
+    } else {
+    
+        return value;
+    }
+    
+    return -1;
+}
 
+int id_for_node_in_hash(char *nodename,struct node_data *nodes_hash){
+    
+    struct node_data *node_item = NULL;
+    
+    HASH_FIND_STR(nodes_hash, nodename, node_item);
+   
+    if(node_item){
+        return node_item->node_num;
+    }
+    
+    return -1;
+}
 

@@ -38,8 +38,8 @@ typedef struct element {
 // node data in the hashtable
 struct node_data {
     
-    int id;              // key field
     char node_name[20];  // name of the node in case it's alphanumeric
+    int node_num;
     UT_hash_handle hh;   // makes this structure hashable
     
 };
