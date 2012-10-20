@@ -16,14 +16,13 @@
 #include "utlist.h"
 #include "helpers.h"
 
-<<<<<<< HEAD
 
 
 
 // list head that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;
 
-=======
+
 // various definitions
 #define MAX_TOKENS_IN_LINE 8
 #define MAX_TOKEN_LEN      10
