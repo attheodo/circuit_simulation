@@ -12,13 +12,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include "uthash.h"
+#include "utlist.h"
 
 // various definitions
 #define MAX_TOKENS_IN_LINE 8
 #define MAX_TOKEN_LEN      10
 
 // data structures and type definitions
-struct element {
+typedef struct element {
     
 	char *element_name;
 	int element_type;
@@ -39,11 +41,12 @@ struct element {
 	
     double value;
     
-	struct element *next_element;
+	struct element *next;
     
-};
+} element;
 
-struct element *list_head ,*element_node;
+// list head, should always be initialized to NULL
+element *head = NULL;
 
 // simple enum for holding the type of circuit elements
 // we might parse
@@ -129,53 +132,25 @@ element_type element_type_for_string(char element_as_string){
     return -1;
 }
 
-#pragma mark - List related
-
-//initializes a list
-void initElementsList(){
-    
-	list_head = (struct element*) malloc( sizeof(struct element) );
-	list_head->next_element = NULL;
-	
-}
 
 //prints the list of the nodes parsed
 void print_elements_parsed() {
     
-    struct element *current_element;
+    element *elem;
     
-    printf("[-] Parsed the following circuit elements:\n\n");
+    printf("\n[-] Parsed elements:\n");
     
-    if(list_head->next_element == NULL){
-        
-        printf("[!] No elements parsed. Netlist file corrupt?\n");
-        return;
+    printf("\n         Type    Name    Terminal 1    Terminal 2      Value    Drain Terminal    Gate Terminal    Source Terminal    Bulk Terminal    Gate Length    Gate Width\n");
     
-    }
-    
-    for(current_element = list_head->next_element; current_element->next_element != NULL; current_element = current_element->next_element){
-        
-        // printing non-transistor element
-        if(current_element->element_type != elementTypeBJTTransistor && current_element->element_type != elementTypeMOSTransistor){
+    LL_FOREACH(head, elem){
+        if(elem->element_type != elementTypeBJTTransistor && elem->element_type != elementTypeMOSTransistor){
+            printf("%13s %7s %8s %13s %15.1e          -                  -                -                 -                -            - \n",name_of_element_for_type(elem->element_type),elem->element_name,elem->first_terminal,elem->second_terminal,elem->value);
             
-            printf("\t%s: %s terminal_1: %s terminal_2: %s value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->value);
+        } else {
+            printf("%s %7s        -             -            - %13s %18s %17s %18s %16.1e %14.1e\n",name_of_element_for_type(elem->element_type),elem->element_name,elem->drain_terminal,elem->gate_terminal,elem->source_terminal,elem->bulk_terminal,elem->gate_length,elem->gate_width);
         }
-        // print transistor element
-        else {
-            printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %.10f gate_width: %.10f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
 
-        }
-        
     }
-    
-    // last element of list
-    if(current_element->element_type != elementTypeBJTTransistor && current_element->element_type != elementTypeMOSTransistor){
-        printf("\t%s: %s terminal_1: %s terminal_2: %s value: %f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->first_terminal,current_element->second_terminal,current_element->value);
-
-    } else {
-         printf("\t%s: %s drain_terminal: %s gate_terminal: %s source_terminal: %s bulk_terminal: %s gate_length: %.10f gate_width: %.10f\n",name_of_element_for_type(current_element->element_type),current_element->element_name,current_element->drain_terminal,current_element->gate_terminal,current_element->source_terminal,current_element->bulk_terminal,current_element->gate_length,current_element->gate_width);
-    }
-   
     
 }   
 
@@ -211,7 +186,6 @@ char **tokenize(char *line)
     }
     
     return tokens;
-
 }
 
 #pragma mark - Main func
@@ -239,10 +213,8 @@ int main(int argc, const char * argv[])
         int line_number = 0;
         size_t len = 0;
         ssize_t line_length;
+        element *parsed_element;
        
-        
-        // initialize the data structure that'll hold the parsed elements
-        initElementsList();
         
         printf("[-] Reading file: %s\n",argv[1]);
         
@@ -261,58 +233,36 @@ int main(int argc, const char * argv[])
             // remove newline character from the end
             line[strlen(line)-1] = 0;
             
-            
-
             tokens = tokenize(line);
             
             // create a new list node to hold the element attributes
-            element_node = (struct element *) malloc( sizeof(struct element) ); 
+            if( (parsed_element = (struct element *) malloc( sizeof(struct element))) == NULL) exit(-1);
             
-            if(list_head == NULL){
-                element_node->next_element = NULL;
-                list_head->next_element = element_node;
-            
-            } else {
-            
-                struct element *current_node;
-                current_node = (struct element *) malloc( sizeof(struct element) );
-                current_node = list_head;
-                
-                while(current_node != NULL){
-                    
-                    if(current_node->next_element == NULL){
-                        current_node->next_element=element_node;
-                        break;
-                    }
-                    current_node = current_node->next_element;
-                }
-            }
-           
-            element_node->element_name = tokens[0];
+            parsed_element->element_name = tokens[0];
             
             if(element_type_for_string(tokens[0][0])  == -1){
-            
                 
                 printf("[!] Encountered element of uknown type: %s (line: %d)\n",tokens[0],line_number);
                 exit(-1);
 
             } else {
-                element_node->element_type = element_type_for_string(tokens[0][0]);
+                parsed_element->element_type = element_type_for_string(tokens[0][0]);
             }
             
             if(atoi(tokens[1]) == 0 || atoi(tokens[1]) == 0) didParseGroundNode = true;
             
-            element_node->first_terminal = tokens[1];
-            element_node->second_terminal = tokens[2];
-            element_node->value = atof(tokens[3]);
+            parsed_element->first_terminal = tokens[1];
+            parsed_element->second_terminal = tokens[2];
+            parsed_element->value = atof(tokens[3]);
             
-            element_node->drain_terminal = tokens[1];
-            element_node->gate_terminal = tokens[2];
-            element_node->source_terminal = tokens[3];
-            element_node->bulk_terminal = tokens[4];
-            element_node->gate_length = atof(tokens[6]+2);
-            element_node->gate_width = atof(tokens[7]+2);
+            parsed_element->drain_terminal = tokens[1];
+            parsed_element->gate_terminal = tokens[2];
+            parsed_element->source_terminal = tokens[3];
+            parsed_element->bulk_terminal = tokens[4];
+            parsed_element->gate_length = atof(tokens[6]+2);
+            parsed_element->gate_width = atof(tokens[7]+2);
             
+            LL_APPEND(head,parsed_element);
             
             line_number++;
         
