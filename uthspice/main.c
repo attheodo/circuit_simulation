@@ -183,6 +183,7 @@ void print_elements_parsed() {
 void print_help(const char *name)
 {
     printf("\n\tUsage: %s <netlist file>\n",name);
+    exit(-1);
 }
 
 // takes the parsed line and returns an array of tokens split by " "
@@ -228,7 +229,7 @@ int main(int argc, const char * argv[])
     if(argc < 2){
         
         print_help(argv[0]);
-        return -1;
+        
     }
     
     // open netlist file
@@ -322,7 +323,8 @@ int main(int argc, const char * argv[])
         
     } else {
         // fopen error
-        printf("[!] %s: %s",argv[1],strerror(errno));
+        printf("\n[!] %s: %s\n\n",argv[1],strerror(errno));
+        exit(-1);
     }
     
     if(!didParseGroundNode) printf("[WARNING] Netlist file looked legit but no ground node found!\n");
