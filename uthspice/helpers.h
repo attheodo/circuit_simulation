@@ -5,9 +5,6 @@
 //
 //
 
-#include "types.h"
-#include "utlist.h"
-
 
 // takes an element_type (int) and returns
 // it's type as a human readable string
@@ -103,9 +100,8 @@ char **tokenize(char *line)
 }
 
 
-
 //prints the list of the nodes parsed
-void print_elements_parsed(element *head) {
+void print_elements_parsed(element *parsed_elements) {
     
     element *elem;
     
@@ -113,7 +109,7 @@ void print_elements_parsed(element *head) {
     
     printf("\n         Type    Name    Terminal 1    Terminal 2      Value    Drain Terminal    Gate Terminal    Source Terminal    Bulk Terminal    Gate Length    Gate Width\n");
     
-    LL_FOREACH(head, elem){
+    LL_FOREACH(parsed_elements, elem){
         if(elem->element_type != elementTypeBJTTransistor && elem->element_type != elementTypeMOSTransistor){
             printf("%13s %7s %8s %13s %15.1e          -                  -                 -                  -                -            - \n",name_of_element_for_type(elem->element_type),elem->element_name,elem->first_terminal,elem->second_terminal,elem->value);
             
@@ -123,5 +119,7 @@ void print_elements_parsed(element *head) {
         
     }
     
-}   
+}
+
+
 

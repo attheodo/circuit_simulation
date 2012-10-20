@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/netlist1"
+            argument = "/Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/netlist2"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

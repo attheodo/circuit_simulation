@@ -35,6 +35,15 @@ typedef struct element {
     
 } element;
 
+// node data in the hashtable
+struct node_data {
+    
+    int id;              // key field
+    char node_name[20];  // name of the node in case it's alphanumeric
+    UT_hash_handle hh;   // makes this structure hashable
+    
+};
+
 // simple enum for holding the type of circuit elements
 // we might parse
 typedef enum {

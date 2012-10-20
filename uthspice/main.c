@@ -12,11 +12,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include "utarray.h"
 #include "uthash.h"
 #include "utlist.h"
+#include "types.h"
 #include "helpers.h"
+#include "mna.h"
 
+bool db_info = true;
 
+// circuit properties
+int numof_circuit_nodes = 0;
 
 // list head that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;
@@ -119,6 +125,12 @@ int main(int argc, const char * argv[])
     
     // print the elements parsed
     print_elements_parsed(head);
+    
+    int numof_circuit_nodes = numberOfNodes(head);
+    
+    if(db_info) printf("\n[-] Circuit has %d nodes without the ground node\n",numof_circuit_nodes);
+    
+    
     
     return 0;
 }
