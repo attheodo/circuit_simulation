@@ -5,6 +5,10 @@
 //
 //
 
+// various definitions
+#define MAX_TOKENS_IN_LINE 8
+#define MAX_TOKEN_LEN      10
+
 // data structures and type definitions
 typedef struct element {
     

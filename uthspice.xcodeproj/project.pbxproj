@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		41D80BAC1632C61A0069AA15 /* uthash.h in Sources */ = {isa = PBXBuildFile; fileRef = 41D80BAA1632C61A0069AA15 /* uthash.h */; };
 		41D80BAD1632C61A0069AA15 /* utlist.h in Sources */ = {isa = PBXBuildFile; fileRef = 41D80BAB1632C61A0069AA15 /* utlist.h */; };
+		41D80BB01632D7090069AA15 /* helpers.h in Sources */ = {isa = PBXBuildFile; fileRef = 41D80BAF1632D7090069AA15 /* helpers.h */; };
+		41D80BB21632D8DB0069AA15 /* types.h in Sources */ = {isa = PBXBuildFile; fileRef = 41D80BB11632D8DB0069AA15 /* types.h */; };
 		41E4467F161DC32500CE6EF4 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 41E4467E161DC32500CE6EF4 /* main.c */; };
 		41E44681161DC32500CE6EF4 /* uthspice.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 41E44680161DC32500CE6EF4 /* uthspice.1 */; };
 /* End PBXBuildFile section */
@@ -29,6 +31,8 @@
 /* Begin PBXFileReference section */
 		41D80BAA1632C61A0069AA15 /* uthash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = uthash.h; sourceTree = "<group>"; };
 		41D80BAB1632C61A0069AA15 /* utlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = utlist.h; sourceTree = "<group>"; };
+		41D80BAF1632D7090069AA15 /* helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = helpers.h; sourceTree = "<group>"; };
+		41D80BB11632D8DB0069AA15 /* types.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = types.h; sourceTree = "<group>"; };
 		41E4467A161DC32500CE6EF4 /* uthspice */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = uthspice; sourceTree = BUILT_PRODUCTS_DIR; };
 		41E4467E161DC32500CE6EF4 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		41E44680161DC32500CE6EF4 /* uthspice.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = uthspice.1; sourceTree = "<group>"; };
@@ -67,6 +71,8 @@
 				41D80BAA1632C61A0069AA15 /* uthash.h */,
 				41D80BAB1632C61A0069AA15 /* utlist.h */,
 				41E4467E161DC32500CE6EF4 /* main.c */,
+				41D80BB11632D8DB0069AA15 /* types.h */,
+				41D80BAF1632D7090069AA15 /* helpers.h */,
 				41E44680161DC32500CE6EF4 /* uthspice.1 */,
 			);
 			path = uthspice;
@@ -126,6 +132,8 @@
 				41E4467F161DC32500CE6EF4 /* main.c in Sources */,
 				41D80BAC1632C61A0069AA15 /* uthash.h in Sources */,
 				41D80BAD1632C61A0069AA15 /* utlist.h in Sources */,
+				41D80BB01632D7090069AA15 /* helpers.h in Sources */,
+				41D80BB21632D8DB0069AA15 /* types.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

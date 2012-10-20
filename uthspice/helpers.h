@@ -75,6 +75,34 @@ element_type element_type_for_string(char element_as_string){
     return -1;
 }
 
+// takes the parsed line and returns an array of tokens split by " "
+char **tokenize(char *line)
+{
+    char **tokens;
+    char *token;
+    int i=0;
+    
+    tokens = (char **)malloc(MAX_TOKENS_IN_LINE*sizeof(char*));
+    
+    for(int y=0;y<MAX_TOKENS_IN_LINE;y++){
+        tokens[y] = (char *)malloc(MAX_TOKEN_LEN*sizeof(char));
+    }
+    
+    token = strtok(line," ");
+    
+    while (token != NULL) {
+        
+        // potential buffer overflow here but who cares ;)
+        strcpy((char *)tokens[i],token);
+        token = strtok(NULL, " ");
+        i++;
+        
+    }
+    
+    return tokens;
+}
+
+
 
 //prints the list of the nodes parsed
 void print_elements_parsed(element *head) {
