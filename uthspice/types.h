@@ -9,6 +9,8 @@
 #define MAX_TOKENS_IN_LINE 8
 #define MAX_TOKEN_LEN      10
 
+#define GROUND 0
+
 // data structures and type definitions
 typedef struct element {
     
@@ -70,10 +72,16 @@ struct node_data *nodes_hashtable;
 
 int numof_circuit_nodes         = 0;
 int numof_indie_voltage_sources = 0;
+int numof_current_sources       = 0;
 
 // MNA Tables
-double **g_table;
-int    **b_table;
+double **g_table = NULL;
+int    **b_table = NULL;
+int    **c_table = NULL;
+int    **d_table = NULL;
+
+double **A_table = NULL;
+double *z_table  = NULL;
 
 // list head that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;

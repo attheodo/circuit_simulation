@@ -100,7 +100,7 @@ char **tokenize(char *line)
 
 
 //prints the list of the nodes parsed
-void print_elements_parsed(element *parsed_elements) {
+void print_elements_parsed() {
     
     element *elem;
     
@@ -108,7 +108,7 @@ void print_elements_parsed(element *parsed_elements) {
     
     printf("\n         Type    Name    Terminal 1    Terminal 2      Value    Drain Terminal    Gate Terminal    Source Terminal    Bulk Terminal    Gate Length    Gate Width\n");
     
-    LL_FOREACH(parsed_elements, elem){
+    LL_FOREACH(head, elem){
         if(elem->element_type != elementTypeBJTTransistor && elem->element_type != elementTypeMOSTransistor){
             printf("%13s %7s %8s %13s %15.1e          -                  -                 -                  -                -            - \n",name_of_element_for_type(elem->element_type),elem->element_name,elem->first_terminal,elem->second_terminal,elem->value);
             
@@ -173,4 +173,85 @@ void print__g_table(int size){
     }
     
     printf("]\n");
+}
+
+// prints the b_table in a human readable format
+void print__b_table(int n,int m){
+    
+    printf("\nB = [\n");
+    // print column indexes
+    printf("\t");
+    for(int i=0;i<m;i++) printf("\t%2d",i);
+    printf("\n");
+    
+    for(int i=0; i < n; i++){
+        for(int z=0; z < m; z++){
+            // print row indexes
+            if(z == 0) printf("\t%d:",i);
+            
+            printf("\t%2d",b_table[i][z]);
+            
+            if(z == m-1) printf("\n");
+        }
+    }
+    
+    printf("]\n");
+}
+
+// prints the b_table in a human readable format
+void print__c_table(int n,int m){
+    
+    printf("\nC = [\n");
+    // print column indexes
+    printf("\t");
+    for(int i=0;i<m;i++) printf("\t%2d",i);
+    printf("\n");
+    
+    for(int i=0; i < n; i++){
+        for(int z=0; z < m; z++){
+            // print row indexes
+            if(z == 0) printf("\t%d:",i);
+            
+            printf("\t%2d",c_table[i][z]);
+            
+            if(z == m-1) printf("\n");
+        }
+    }
+    
+    printf("]\n");
+}
+
+void print__A_table(int n,int m){
+    printf("\nA = [\n");
+    // print column indexes
+    printf("\t");
+    for(int i=0;i<m;i++) printf("%14d",i);
+    printf("\n");
+    
+    for(int i=0; i < n; i++){
+        for(int z=0; z < m; z++){
+            // print row indexes
+            if(z == 0) printf("\t%2d:",i);
+            
+            printf("%14f",A_table[i][z]);
+            
+            if(z == m-1) printf("\n");
+        }
+    }
+    
+    printf("]\n");
+
+}
+
+void print__Z_table(int numof_circuit_nodes,int numof_voltage_sources){
+    
+    printf("\nz = [\n");
+    for(int i=0;i< numof_circuit_nodes+numof_voltage_sources;i++){
+        printf("\t%d: %.5f\n",i,z_table[i]);
+    }
+    printf("]");
+}
+
+void replace_L_C (){
+
 }

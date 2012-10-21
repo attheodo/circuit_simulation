@@ -115,12 +115,14 @@ int main(int argc, const char * argv[])
     
     if(!didParseGroundNode) printf("\n[WARNING] Netlist file looked legit but no ground node found!\n\n");
     
+    replace_L_C();
     // print the elements parsed
-    print_elements_parsed(head);
+    print_elements_parsed();
     
         
     numof_circuit_nodes = numberOfNodes(head);
-    numof_indie_voltage_sources = numOfIndependentVoltageSources(head);
+    numof_indie_voltage_sources = numOfIndependentVoltageSources();
+    numof_current_sources = numOfCurrentSources();
     
     if(DEBUG){
         struct node_data *s;
@@ -145,12 +147,42 @@ int main(int argc, const char * argv[])
     for(int i=0; i < numof_circuit_nodes; i++){
         b_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
     }
-
-
-    calculate__g_table(head,numof_circuit_nodes);
-    calculate__b_table(head, numof_circuit_nodes, numof_indie_voltage_sources);
     
-    print__g_table(numof_circuit_nodes);
+    // Initialize C table
+    c_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
+    for(int i=0; i < numof_indie_voltage_sources; i++){
+        c_table[i] = (int *)malloc(numof_circuit_nodes * sizeof(int));
+        
+    }
+    
+    // Initialize D table
+    d_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
+    for(int i=0; i < numof_indie_voltage_sources; i++){
+        d_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
+        
+    }
+    
+    // Initialize A table
+    A_table = (double **)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double *));
+    for(int i=0; i < numof_circuit_nodes+numof_indie_voltage_sources; i++){
+        A_table[i] = (double *)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double));
+    }
+
+    // initialize Z table
+    z_table = (double *)malloc((numof_current_sources+numof_indie_voltage_sources)*sizeof(double));
+    
+    calculate__g_table(head,numof_circuit_nodes);
+    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    calculate__d_table(numof_indie_voltage_sources);
+    calculate__A_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    create__z_table(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
+    
+    if(DEBUG)print__g_table(numof_circuit_nodes);
+    if(DEBUG)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
+    if(DEBUG)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
+    print__A_table(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
+    print__Z_table(numof_circuit_nodes, numof_indie_voltage_sources);
     
     return 0;
 }

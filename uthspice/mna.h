@@ -59,19 +59,33 @@ int numberOfNodes(element *parsed_elements){
 }
 
 // returns the number of voltage sources found in the parsed circuit
-int numOfIndependentVoltageSources(element *parsed_elements){
+int numOfIndependentVoltageSources(){
     
     element *elem = NULL;
     int numOfVoltageSources = 0;
     
     // start browsing the list
-    LL_FOREACH(parsed_elements, elem){
+    LL_FOREACH(head, elem){
         if(elem->element_type == elementTypeVoltageSource) numOfVoltageSources++;
     }
     
     // return the number of nodes with out the ground (-1)
     return numOfVoltageSources;
 
+}
+
+// return the number of current sources in the parsed circuit
+int numOfCurrentSources(){
+    element *elem = NULL;
+    int numOfCurrentSources = 0;
+    
+    // start browsing the list
+    LL_FOREACH(head, elem){
+        if(elem->element_type == elementTypeCurrentSource) numOfCurrentSources++;
+    }
+    
+    // return the number of nodes with out the ground (-1)
+    return numOfCurrentSources;
 }
 
 void calculate__g_table(element *parsed_elements, int num_of_nodes){
@@ -84,7 +98,7 @@ void calculate__g_table(element *parsed_elements, int num_of_nodes){
             g_table[i][z] = 0.0;
         }
     }
-    
+   
     // first calculate the diagonal table
     for(int i=1; i <= num_of_nodes;i++){
         
@@ -120,22 +134,163 @@ void calculate__g_table(element *parsed_elements, int num_of_nodes){
               
                 if(DEBUG) printf("[g_table] -1/%s=%f (%s,%s) added to (%d,%d) and (%d,%d)\n",elem->element_name,elem->value,elem->first_terminal,elem->second_terminal,first_nodeid,second_nodeid,second_nodeid,first_nodeid);
                 
-                g_table[first_nodeid][second_nodeid] += -1/elem->value;
-                g_table[second_nodeid][first_nodeid] += -1/elem->value;
+                g_table[first_nodeid-1][second_nodeid-1] += -(1/elem->value);
+                g_table[second_nodeid-1][first_nodeid-1] += -(1/elem->value);
 
             }
         }
     }
+    
 }
 
 // calculates the B table
-void calculate__b_table(element *parsed_elements, int num_of_nodes, int num_of_voltage_sources){
+void calculate__b_table(int num_of_nodes, int num_of_voltage_sources){
     
-    // initialize table
+    element *elem = NULL;
+    
+    int voltagesource_id = 0;
+   
+    // initialize table with zeros
     for(int i=0; i < num_of_nodes; i++){
-        for(int z=0; z < num_of_nodes; z++){
+        for(int z=0; z < num_of_voltage_sources; z++){
             b_table[i][z] = 0;
         }
     }
+    
+    // go through the list
+    LL_FOREACH(head, elem){
+        
+        // we only care about voltage sources
+        if(elem->element_type == elementTypeVoltageSource){
+            
+            int positive_terminal = id_for_node_in_hash(elem->first_terminal);
+            int negative_terminal = id_for_node_in_hash(elem->second_terminal);
+            
+            // if voltage source is not connected to ground, it will have two entries in the table
+            if((positive_terminal != GROUND) && (negative_terminal != GROUND)){
+                
+                if(DEBUG) printf("[b_table] Voltage source %s (%d,%d) is not grounded. Entries in b_table[%d][%d]=-1 and b_table[%d][%d]=1\n",elem->element_name,positive_terminal,negative_terminal,negative_terminal,voltagesource_id,positive_terminal,voltagesource_id);
+                b_table[negative_terminal-1][voltagesource_id] = -1;
+                b_table[positive_terminal-1][voltagesource_id] = 1;
+                voltagesource_id++;
+            
+            } else {
+                
+                // voltage source has one grounded node. There's one entry in the b table
+                if(positive_terminal == GROUND){
+                   
+                    if(DEBUG) printf("[b_table] Voltage source %s (%d,%d) is grounded. Entry in b_table[%d][%d]=-1\n",elem->element_name,positive_terminal,negative_terminal,negative_terminal,voltagesource_id);
 
+                    b_table[negative_terminal-1][voltagesource_id] = -1;
+                    voltagesource_id++;
+                
+                } else if(negative_terminal == GROUND){
+                
+                    if(DEBUG) printf("[b_table] Voltage source %s (%d,%d) is grounded. Entry in b_table[%d][%d]=1\n",elem->element_name,positive_terminal,negative_terminal,positive_terminal,voltagesource_id);
+
+                    b_table[positive_terminal-1][voltagesource_id] = 1;
+                    voltagesource_id++;
+                
+                }
+                
+            }
+            
+        }
+        
+    }
 }
+
+void calculate__c_table(int numof_circuit_nodes, int numof_indie_voltage_sources){
+    
+    for(int i=0; i < numof_circuit_nodes; i++){
+        for(int z=0; z < numof_indie_voltage_sources; z++){
+            c_table[z][i] = b_table[i][z];
+        }
+    }
+}
+
+void calculate__d_table(int numof_indie_voltage_sources){
+    for(int i=0;i < numof_indie_voltage_sources;i++){
+        for(int z=0; z < numof_indie_voltage_sources; z++){
+            d_table[i][z] = 0;
+        }
+    }
+}
+
+void calculate__A_table(int numof_circuit_nodes, int numof_indie_voltage_sources){
+    
+    // merge g table
+    for(int i=0; i < numof_circuit_nodes;i++){
+        for(int z=0; z < numof_circuit_nodes;z++){
+            A_table[i][z] = g_table[i][z];
+        }
+    }
+    
+    // merge b table
+    for(int b_row_index=0; b_row_index < numof_circuit_nodes;b_row_index++){
+        for(int b_column_index=0,a_column_index=numof_circuit_nodes; b_column_index < numof_indie_voltage_sources; b_column_index++,a_column_index++){
+            A_table[b_row_index][a_column_index] = (double)b_table[b_row_index][b_column_index];
+        }
+    }
+    
+    // merge c table
+    for(int c_row_index=0,a_row_index=numof_circuit_nodes;c_row_index<numof_indie_voltage_sources;c_row_index++,a_row_index++){
+        for(int c_column_index=0; c_column_index < numof_circuit_nodes; c_column_index++){
+            A_table[a_row_index][c_column_index] = (double)c_table[c_row_index][c_column_index];
+        }
+    }
+    
+    // merge d table
+    for(int d_row_index=0,a_row_index=numof_circuit_nodes;d_row_index<numof_indie_voltage_sources;d_row_index++,a_row_index++){
+        for(int d_column_index=0,a_column_index=numof_circuit_nodes;d_column_index<numof_indie_voltage_sources;d_column_index++,a_column_index++){
+            A_table[a_row_index][a_column_index] = (double)d_table[d_row_index][d_column_index];
+        }
+    }
+    
+}
+
+// calculates the z table holding the know quantities of the parsed circuit
+void create__z_table(int numof_circuit_nodes, int numof_indie_voltage_sources, int numof_current_sources){
+    
+    element *elem = NULL;
+    
+    for(int i=0;i<numof_circuit_nodes+numof_indie_voltage_sources;i++){
+        z_table[i] = 0;
+    }
+    
+    // insert current sources into z table
+    LL_FOREACH(head, elem){
+        
+        if(elem->element_type == elementTypeCurrentSource){
+            
+            int positive_node = id_for_node_in_hash(elem->first_terminal);
+            int negative_node = id_for_node_in_hash(elem->second_terminal);
+            
+            if((positive_node != GROUND) && (negative_node != GROUND)){
+                z_table[positive_node-1] += -elem->value;
+                z_table[negative_node-1] += elem->value;
+            }
+            else if((positive_node != GROUND) && (negative_node == GROUND)){
+                z_table[positive_node-1] += -elem->value;
+            }
+            else if((positive_node == GROUND) && (negative_node != GROUND)){
+                z_table[negative_node-1] += elem->value;
+            } 
+        }
+        
+    }
+    int index=0;
+    
+    // insert voltage sources into z table
+    LL_FOREACH(head, elem){
+        
+        if(elem->element_type == elementTypeVoltageSource){
+            z_table[numof_circuit_nodes+index] += elem->value;
+            index++;
+        }
+        
+        
+    }
+    
+}
+
