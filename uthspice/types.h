@@ -61,3 +61,19 @@ typedef enum {
 
 // simple BOOL typedef
 typedef enum { false, true } bool;
+
+// whether to print debugging statements
+bool db_info = true;
+
+// circuit properties
+struct node_data *nodes_hashtable;
+
+int numof_circuit_nodes         = 0;
+int numof_indie_voltage_sources = 0;
+
+// MNA Tables
+double **g_table;
+int    **b_table;
+
+// list head that holds the parsed elements, should always be initialized to NULL
+element *head = NULL;

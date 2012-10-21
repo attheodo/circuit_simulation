@@ -128,6 +128,8 @@ int generate_uniqueid(char *string){
     // node is alphanumeric
     if (endptr == string) {
         
+        // TODO: this should first go through all the ids from 1 to num_of_nodes and assign a non-used one
+        // instead of using this stupid hack that created large integers
         return string[0]+string[1]+string[3];
     
     // return the proper int value form the numeric string
@@ -139,11 +141,11 @@ int generate_uniqueid(char *string){
     return -1;
 }
 
-int id_for_node_in_hash(char *nodename,struct node_data *nodes_hash){
+int id_for_node_in_hash(char *nodename){
     
     struct node_data *node_item = NULL;
     
-    HASH_FIND_STR(nodes_hash, nodename, node_item);
+    HASH_FIND_STR(nodes_hashtable, nodename, node_item);
    
     if(node_item){
         return node_item->node_num;
@@ -152,3 +154,23 @@ int id_for_node_in_hash(char *nodename,struct node_data *nodes_hash){
     return -1;
 }
 
+// prints the g_table in a human readable format
+void print__g_table(int size){
+    
+    printf("\nG = [\n");
+    // print column indexes
+    for(int i=0;i<size;i++) printf("%15d",i);
+    printf("\n");
+   
+    for(int i=0; i < size; i++){
+        for(int z=0; z < size; z++){
+            // print row indexes
+            if(z == 0) printf("\t%d:",i);
+           
+            printf("%15.10f",g_table[i][z]);
+            if(z == size-1) printf("\n");
+        }
+    }
+    
+    printf("]\n");
+}
