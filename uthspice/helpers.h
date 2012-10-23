@@ -253,5 +253,27 @@ void print__Z_table(int numof_circuit_nodes,int numof_voltage_sources){
 }
 
 void replace_L_C (){
-
+  
+    element *temp_element;
+    element *new_element;
+    
+    LL_FOREACH(head,temp_element){
+        
+       if(temp_element->element_type == elementTypeInductor){
+           
+           if( (new_element = (struct element *) malloc( sizeof(struct element))) == NULL) exit(-1);
+           new_element->element_type = element_type_for_string('V');
+           new_element->element_name = (char *)malloc(strlen(temp_element->element_name)*sizeof(char));
+           sprintf(new_element->element_name,"V%s",temp_element->element_name);
+           new_element->value = 0.0;
+           new_element->first_terminal = temp_element->first_terminal;
+           new_element->second_terminal = temp_element->second_terminal;
+            
+           // add it to the list
+            LL_APPEND(head,new_element); 
+            
+        }
+      
+    }
+    
 }
