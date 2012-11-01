@@ -25,6 +25,8 @@ char *name_of_element_for_type(element_type i){
             return "MOSTransistor";
         case elementTypeBJTTransistor:
             return "BJTTransistor";
+        case elementTypeOption:
+            return "Option:";
         default:
             return "Something went terribly wrong\n";
     }
@@ -66,6 +68,9 @@ element_type element_type_for_string(char element_as_string){
         
         return elementTypeBJTTransistor;
         
+    } else if(element_as_string == '.') {
+        
+        return elementTypeOption;
     }
     
     return -1;
@@ -152,6 +157,44 @@ int id_for_node_in_hash(char *nodename){
     }
     
     return -1;
+}
+
+void parse_netlist_option(char **option_args){
+    
+    netlist_option *option = (struct netlist_option *) malloc( sizeof(struct netlist_option));
+
+    // DC sweep option parsing
+    if(strcmp(option_args[0],".DC") == 0){
+        
+        dc_sweep = true;
+        option->option_type = optionTypeDCSweep;
+        option->node_name = option_args[1];
+        option->start_value = atof(option_args[2]);
+        option->end_value = atof(option_args[3]);
+        option->step = atof(option_args[4]);
+        printf("[-] DC sweep option set \n\tNode: %s\tstart_value: %f\tend_value: %f\tstep: %f\n",option->node_name,option->start_value,option->end_value,option->step);
+        
+        // add it to the list holding options
+        LL_APPEND(netlist_options, option);
+        
+    }
+    // PLOT/PRINT DC sweep option parsing
+    else if( (strcmp(option_args[0],".PLOT") == 0) || (strcmp(option_args[0],".PRINT") == 0) ){
+        
+        dc_sweep_plot = true;
+        
+        option->option_type = optionTypePlot;
+        char *tmp = strndup(option_args[1]+2, strlen(option_args[1])-3);
+        option->node_name = tmp;
+        
+        printf("\n[-] Plotting option set\n\tVoltage results for node: %s\n",option->node_name);
+
+        // add it to the options list
+        LL_APPEND(netlist_options, option);
+               
+    }
+    
+    free(option);
 }
 
 // prints the g_table in a human readable format

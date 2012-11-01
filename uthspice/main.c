@@ -72,7 +72,7 @@ int main(int argc, char * argv[])
         ssize_t line_length;
         element *parsed_element;
        
-        printf("[-] Reading file: %s\n",argv[1]);
+        printf("[-] Reading file: %s\n",netlist_filename);
         
         // parse the file line by line
         while ((line_length = getline(&line, &len, netlist_file)) != -1) {
@@ -95,31 +95,42 @@ int main(int argc, char * argv[])
             
             parsed_element->element_name = tokens[0];
             
+            // encountered unknown element
             if(element_type_for_string(tokens[0][0])  == -1){
                 
                 printf("[!] Encountered element of uknown type: %s (line: %d)\n",tokens[0],line_number);
                 exit(-1);
 
-            } else {
-                parsed_element->element_type = element_type_for_string(tokens[0][0]);
             }
             
-            if(atoi(tokens[1]) == 0 || atoi(tokens[1]) == 0) didParseGroundNode = true;
+            // encountered option
+            else if(element_type_for_string(tokens[0][0]) == elementTypeOption){
+                parse_netlist_option(tokens);
+            }
             
-            parsed_element->first_terminal = tokens[1];
-            parsed_element->second_terminal = tokens[2];
-            parsed_element->value = atof(tokens[3]);
+            // known netlist element
+            else {
+                parsed_element->element_type = element_type_for_string(tokens[0][0]);
+               
+                if(atoi(tokens[1]) == 0 || atoi(tokens[1]) == 0) didParseGroundNode = true;
+                
+                parsed_element->first_terminal = tokens[1];
+                parsed_element->second_terminal = tokens[2];
+                parsed_element->value = atof(tokens[3]);
+                
+                parsed_element->drain_terminal = tokens[1];
+                parsed_element->gate_terminal = tokens[2];
+                parsed_element->source_terminal = tokens[3];
+                parsed_element->bulk_terminal = tokens[4];
+                parsed_element->gate_length = atof(tokens[6]+2);
+                parsed_element->gate_width = atof(tokens[7]+2);
+                
+                // add it to the list
+                LL_APPEND(head,parsed_element);
+
+            }
             
-            parsed_element->drain_terminal = tokens[1];
-            parsed_element->gate_terminal = tokens[2];
-            parsed_element->source_terminal = tokens[3];
-            parsed_element->bulk_terminal = tokens[4];
-            parsed_element->gate_length = atof(tokens[6]+2);
-            parsed_element->gate_width = atof(tokens[7]+2);
-            
-            // add it to the list
-            LL_APPEND(head,parsed_element);
-            
+                       
             line_number++;
         
         }

@@ -37,6 +37,18 @@ typedef struct element {
     
 } element;
 
+typedef struct netlist_option {
+    
+    int option_type;
+    char *node_name;
+    float start_value;
+    float end_value;
+    float step;
+    
+    struct netlist_option *next;
+
+} netlist_option;
+
 // node data in the hashtable
 struct node_data {
     
@@ -57,9 +69,17 @@ typedef enum {
     elementTypeInductor,
     elementTypeDiode,
     elementTypeMOSTransistor,
-    elementTypeBJTTransistor
+    elementTypeBJTTransistor,
+    elementTypeOption
     
 } element_type;
+
+typedef enum {
+
+    optionTypeDCSweep = 0,
+    optionTypePlot
+
+} option_types;
 
 // simple BOOL typedef
 typedef enum { false, true } bool;
@@ -68,6 +88,15 @@ typedef enum { false, true } bool;
 bool db_info = true;
 
 bool verbose = false;
+
+// NETLIST OPTIONS
+
+// DC Sweep options
+bool dc_sweep = false;
+
+// DC Sweep plot options
+bool dc_sweep_plot = false;
+
 
 // circuit properties
 struct node_data *nodes_hashtable;
@@ -85,5 +114,6 @@ int    **d_table = NULL;
 double **A_table = NULL;
 double *z_table  = NULL;
 
-// list head that holds the parsed elements, should always be initialized to NULL
+// list that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;
+netlist_option *netlist_options = NULL;
