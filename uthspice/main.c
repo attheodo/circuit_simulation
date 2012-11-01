@@ -23,28 +23,48 @@
 // prints a simple help message
 void print_help(const char *name)
 {
-    printf("\n\tUsage: %s <netlist file>\n",name);
+    printf("\nUsage: .%s [options]\n",name);
+    printf("\n\tAvailable options:\n\n \t-i FILE\t\t The netlist file to analyze\t\t\t[REQUIRED]\n");
+    printf("\t-v\t\t\t Verbose mode (prints lots of stuff)\t[OPTIONAL]\n");
     exit(-1);
 }
 
 
 #pragma mark - Main func
 // no comment
-int main(int argc, const char * argv[])
+int main(int argc, char * argv[])
 {
 
     FILE *netlist_file = NULL;
+    char *netlist_filename = NULL;
     bool didParseGroundNode = false;
-
+    int option = 0;
     
-    // check that we have a filename
-    // maybe update it to be able to receive UNIX pipe in the future
-    if(argc < 2){
+   
+    while ((option = getopt (argc, argv, "vi:")) != -1)
+    {
+        switch (option)
+        {
+            case 'v':
+                verbose = true;
+                break;
+            case 'i':
+                netlist_filename = strdup(optarg);
+                break;
+            default:
+                print_help(argv[0]);
+                break;
+        }
+    }
+    
+    if(argc < 2 || netlist_filename == NULL){
         print_help(argv[0]);
     }
     
+    
+    
     // open netlist file
-    if((netlist_file = fopen(argv[1], "r"))){
+    if((netlist_file = fopen(netlist_filename, "r"))){
         
         char *line = NULL;
         int line_number = 0;
@@ -123,7 +143,7 @@ int main(int argc, const char * argv[])
     numof_indie_voltage_sources = numOfIndependentVoltageSources();
     numof_current_sources = numOfCurrentSources();
     
-    if(DEBUG){
+    if(verbose){
         struct node_data *s;
         printf("\n");
         for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
@@ -132,8 +152,8 @@ int main(int argc, const char * argv[])
         
     }
 
-    if(DEBUG) printf("\n[-] Circuit has %d nodes without the ground node.\n",numof_circuit_nodes);
-    if(DEBUG) printf("[-] Circuit has %d independant Voltage sources.\n\n",numof_indie_voltage_sources);
+    if(verbose) printf("\n[-] Circuit has %d nodes without the ground node.\n",numof_circuit_nodes);
+    if(verbose) printf("[-] Circuit has %d independant Voltage sources.\n\n",numof_indie_voltage_sources);
     
     // Initialize G Table
     g_table = (double **)malloc(numof_circuit_nodes * sizeof(double *));
@@ -177,9 +197,9 @@ int main(int argc, const char * argv[])
     calculate__A_table(numof_circuit_nodes, numof_indie_voltage_sources);
     create__z_table(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
     
-    if(DEBUG)print__g_table(numof_circuit_nodes);
-    if(DEBUG)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
-    if(DEBUG)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
+    if(verbose)print__g_table(numof_circuit_nodes);
+    if(verbose)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
+    if(verbose)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
     print__A_table(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
     print__Z_table(numof_circuit_nodes, numof_indie_voltage_sources);
     
