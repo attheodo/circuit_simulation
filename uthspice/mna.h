@@ -28,6 +28,7 @@ int numberOfNodes(element *parsed_elements){
         
         }
         
+        
         node_item = NULL;
         
         // check if the node is already in the hashtable, if not add it
@@ -44,15 +45,8 @@ int numberOfNodes(element *parsed_elements){
 
     }
 
-    /*if(DEBUG){
-        struct node_data *s;
-        printf("\n");
-        for(s=nodes; s != NULL; s=(struct node_data*)(s->hh.next)) {
-            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
-        }
-
-    }*/
-    
+    free(node_item);
+        
     
     // return the number of nodes with out the ground (-1)
     return HASH_COUNT(nodes_hashtable) - 1;
