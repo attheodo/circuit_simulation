@@ -104,7 +104,7 @@ void calculate__g_table(element *parsed_elements, int num_of_nodes){
                 // if the element has at least one terminal connected to our now, add it to the table
                 if( (id_for_node_in_hash(elem->first_terminal) == i) || (id_for_node_in_hash(elem->second_terminal) == i)){
                     
-                    if(DEBUG) printf("[g_table] 1/%s=%f (%s,%s) added to (%d,%d)\n",elem->element_name,elem->value,elem->first_terminal,elem->second_terminal,i,i);
+                    if(verbose) printf("[g_table] 1/%s=%f (%s,%s) added to (%d,%d)\n",elem->element_name,elem->value,elem->first_terminal,elem->second_terminal,i,i);
                     g_table[i-1][i-1] += 1/elem->value;
                
                 }
@@ -126,7 +126,7 @@ void calculate__g_table(element *parsed_elements, int num_of_nodes){
             
             if( (first_nodeid != 0) && (second_nodeid != 0)){
               
-                if(DEBUG) printf("[g_table] -1/%s=%f (%s,%s) added to (%d,%d) and (%d,%d)\n",elem->element_name,elem->value,elem->first_terminal,elem->second_terminal,first_nodeid,second_nodeid,second_nodeid,first_nodeid);
+                if(verbose) printf("[g_table] -1/%s=%f (%s,%s) added to (%d,%d) and (%d,%d)\n",elem->element_name,elem->value,elem->first_terminal,elem->second_terminal,first_nodeid,second_nodeid,second_nodeid,first_nodeid);
                 
                 g_table[first_nodeid-1][second_nodeid-1] += -(1/elem->value);
                 g_table[second_nodeid-1][first_nodeid-1] += -(1/elem->value);
@@ -163,7 +163,7 @@ void calculate__b_table(int num_of_nodes, int num_of_voltage_sources){
             // if voltage source is not connected to ground, it will have two entries in the table
             if((positive_terminal != GROUND) && (negative_terminal != GROUND)){
                 
-                if(DEBUG) printf("[b_table] Voltage source %s (%d,%d) is not grounded. Entries in b_table[%d][%d]=-1 and b_table[%d][%d]=1\n",elem->element_name,positive_terminal,negative_terminal,negative_terminal,voltagesource_id,positive_terminal,voltagesource_id);
+                if(verbose) printf("[b_table] Voltage source %s (%d,%d) is not grounded. Entries in b_table[%d][%d]=-1 and b_table[%d][%d]=1\n",elem->element_name,positive_terminal,negative_terminal,negative_terminal,voltagesource_id,positive_terminal,voltagesource_id);
                 b_table[negative_terminal-1][voltagesource_id] = -1;
                 b_table[positive_terminal-1][voltagesource_id] = 1;
                 voltagesource_id++;
@@ -173,14 +173,14 @@ void calculate__b_table(int num_of_nodes, int num_of_voltage_sources){
                 // voltage source has one grounded node. There's one entry in the b table
                 if(positive_terminal == GROUND){
                    
-                    if(DEBUG) printf("[b_table] Voltage source %s (%d,%d) is grounded. Entry in b_table[%d][%d]=-1\n",elem->element_name,positive_terminal,negative_terminal,negative_terminal,voltagesource_id);
+                    if(verbose) printf("[b_table] Voltage source %s (%d,%d) is grounded. Entry in b_table[%d][%d]=-1\n",elem->element_name,positive_terminal,negative_terminal,negative_terminal,voltagesource_id);
 
                     b_table[negative_terminal-1][voltagesource_id] = -1;
                     voltagesource_id++;
                 
                 } else if(negative_terminal == GROUND){
                 
-                    if(DEBUG) printf("[b_table] Voltage source %s (%d,%d) is grounded. Entry in b_table[%d][%d]=1\n",elem->element_name,positive_terminal,negative_terminal,positive_terminal,voltagesource_id);
+                    if(verbose) printf("[b_table] Voltage source %s (%d,%d) is grounded. Entry in b_table[%d][%d]=1\n",elem->element_name,positive_terminal,negative_terminal,positive_terminal,voltagesource_id);
 
                     b_table[positive_terminal-1][voltagesource_id] = 1;
                     voltagesource_id++;

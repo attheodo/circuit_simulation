@@ -67,6 +67,8 @@ typedef enum { false, true } bool;
 // whether to print debugging statements
 bool db_info = true;
 
+bool verbose = false;
+
 // circuit properties
 struct node_data *nodes_hashtable;
 
