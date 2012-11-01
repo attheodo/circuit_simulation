@@ -103,7 +103,6 @@ int main(int argc, const char * argv[])
             line_number++;
         
         }
-
         // close gracefully the file
         fclose(netlist_file);
         
@@ -183,6 +182,13 @@ int main(int argc, const char * argv[])
     if(DEBUG)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
     print__A_table(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
     print__Z_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    
+    free(g_table);
+    free(b_table);
+    free(c_table);
+    free(d_table);
+    free(A_table);
+    free(z_table);
     
     return 0;
 }
