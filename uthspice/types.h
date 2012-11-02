@@ -88,13 +88,14 @@ typedef enum { false, true } bool;
 bool db_info = true;
 
 bool verbose = false;
+bool should_solve = false;
 
 // NETLIST OPTIONS
 
+// Cholesky (SPD)
+bool cholesky_method = false;
 // DC Sweep options
 bool dc_sweep = false;
-
-// DC Sweep plot options
 bool dc_sweep_plot = false;
 
 
@@ -111,8 +112,8 @@ int    **b_table = NULL;
 int    **c_table = NULL;
 int    **d_table = NULL;
 
-double **A_table = NULL;
-double *z_table  = NULL;
+gsl_matrix *A_table = NULL;
+gsl_vector *z  = NULL;
 
 // list that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;

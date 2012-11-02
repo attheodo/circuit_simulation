@@ -12,12 +12,14 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <gsl/gsl_linalg.h>
 #include "utarray.h"
 #include "uthash.h"
 #include "utlist.h"
 #include "types.h"
 #include "helpers.h"
 #include "mna.h"
+#include "solvers.h"
 
 
 // prints a simple help message
@@ -25,6 +27,7 @@ void print_help(const char *name)
 {
     printf("\nUsage: .%s [options]\n",name);
     printf("\n\tAvailable options:\n\n \t-i FILE\t\t The netlist file to analyze\t\t\t[REQUIRED]\n");
+    printf("\t-s\t\t\t Solve the MNA system. LU or Cholesky if SPD is set.\t[OPTIONAL]\n");
     printf("\t-v\t\t\t Verbose mode (prints lots of stuff)\t[OPTIONAL]\n");
     exit(-1);
 }
@@ -41,7 +44,7 @@ int main(int argc, char * argv[])
     int option = 0;
     
    
-    while ((option = getopt (argc, argv, "vi:")) != -1)
+    while ((option = getopt (argc, argv, "svi:")) != -1)
     {
         switch (option)
         {
@@ -50,6 +53,9 @@ int main(int argc, char * argv[])
                 break;
             case 'i':
                 netlist_filename = strdup(optarg);
+                break;
+            case 's':
+                should_solve = true;
                 break;
             default:
                 print_help(argv[0]);
@@ -193,13 +199,14 @@ int main(int argc, char * argv[])
     }
     
     // Initialize A table
-    A_table = (double **)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double *));
-    for(int i=0; i < numof_circuit_nodes+numof_indie_voltage_sources; i++){
-        A_table[i] = (double *)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double));
-    }
+    //A_table = (double **)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double *));
+    //for(int i=0; i < numof_circuit_nodes+numof_indie_voltage_sources; i++){
+     //   A_table[i] = (double *)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double));
+   // }
+    A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
 
     // initialize Z table
-    z_table = (double *)malloc((numof_current_sources+numof_indie_voltage_sources)*sizeof(double));
+    z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
     
     calculate__g_table(head,numof_circuit_nodes);
     calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
@@ -214,12 +221,20 @@ int main(int argc, char * argv[])
     print__A_table(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
     print__Z_table(numof_circuit_nodes, numof_indie_voltage_sources);
     
+    
+    if(!dc_sweep && !cholesky_method && should_solve){
+        
+        LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
+    
+    }
+    
     free(g_table);
     free(b_table);
     free(c_table);
     free(d_table);
-    free(A_table);
-    free(z_table);
+    
+    gsl_matrix_free(A_table);
+    gsl_vector_free(z);
     
     return 0;
 }

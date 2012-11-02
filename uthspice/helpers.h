@@ -265,7 +265,7 @@ void print__c_table(int n,int m){
 }
 
 void print__A_table(int n,int m){
-    printf("\nA = [\n");
+   printf("\nA = [\n");
     // print column indexes
     printf("\t");
     for(int i=0;i<m;i++) printf("%14d",i);
@@ -276,21 +276,21 @@ void print__A_table(int n,int m){
             // print row indexes
             if(z == 0) printf("\t%2d:",i);
             
-            printf("%14f",A_table[i][z]);
+            printf("%14f",gsl_matrix_get(A_table,i,z));
             
             if(z == m-1) printf("\n");
         }
     }
     
     printf("]\n");
-
+    
 }
 
 void print__Z_table(int numof_circuit_nodes,int numof_voltage_sources){
     
     printf("\nz = [\n");
     for(int i=0;i< numof_circuit_nodes+numof_voltage_sources;i++){
-        printf("\t%d: %.5f\n",i,z_table[i]);
+        printf("\t%d: %.5f\n",i,gsl_vector_get(z, i));
     }
     printf("]");
 }

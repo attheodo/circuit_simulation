@@ -26,6 +26,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		411B3D001643E5330092A6E3 /* solvers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = solvers.h; sourceTree = "<group>"; };
 		41D80BAA1632C61A0069AA15 /* uthash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = uthash.h; sourceTree = "<group>"; };
 		41D80BAB1632C61A0069AA15 /* utlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = utlist.h; sourceTree = "<group>"; };
 		41D80BAF1632D7090069AA15 /* helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = helpers.h; sourceTree = "<group>"; };
@@ -82,6 +83,7 @@
 				41D80BB11632D8DB0069AA15 /* types.h */,
 				41D80BAF1632D7090069AA15 /* helpers.h */,
 				41D80BBB1632E3CA0069AA15 /* mna.h */,
+				411B3D001643E5330092A6E3 /* solvers.h */,
 				41E44680161DC32500CE6EF4 /* uthspice.1 */,
 			);
 			path = uthspice;
@@ -169,8 +171,14 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/gsl/1.15/include/;
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/gsl/1.15/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-lgsl",
+					"-lgslcblas",
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -192,7 +200,13 @@
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/gsl/1.15/include/;
+				LIBRARY_SEARCH_PATHS = /usr/local/Cellar/gsl/1.15/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				OTHER_LDFLAGS = (
+					"-lgsl",
+					"-lgslcblas",
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;

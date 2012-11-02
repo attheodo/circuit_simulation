@@ -216,28 +216,28 @@ void calculate__A_table(int numof_circuit_nodes, int numof_indie_voltage_sources
     // merge g table
     for(int i=0; i < numof_circuit_nodes;i++){
         for(int z=0; z < numof_circuit_nodes;z++){
-            A_table[i][z] = g_table[i][z];
+            gsl_matrix_set(A_table,i,z,g_table[i][z]);
         }
     }
     
     // merge b table
     for(int b_row_index=0; b_row_index < numof_circuit_nodes;b_row_index++){
         for(int b_column_index=0,a_column_index=numof_circuit_nodes; b_column_index < numof_indie_voltage_sources; b_column_index++,a_column_index++){
-            A_table[b_row_index][a_column_index] = (double)b_table[b_row_index][b_column_index];
+            gsl_matrix_set(A_table,b_row_index,a_column_index,(double)b_table[b_row_index][b_column_index]);
         }
     }
     
     // merge c table
     for(int c_row_index=0,a_row_index=numof_circuit_nodes;c_row_index<numof_indie_voltage_sources;c_row_index++,a_row_index++){
         for(int c_column_index=0; c_column_index < numof_circuit_nodes; c_column_index++){
-            A_table[a_row_index][c_column_index] = (double)c_table[c_row_index][c_column_index];
+            gsl_matrix_set(A_table,a_row_index,c_column_index,(double)c_table[c_row_index][c_column_index]);
         }
     }
     
     // merge d table
     for(int d_row_index=0,a_row_index=numof_circuit_nodes;d_row_index<numof_indie_voltage_sources;d_row_index++,a_row_index++){
         for(int d_column_index=0,a_column_index=numof_circuit_nodes;d_column_index<numof_indie_voltage_sources;d_column_index++,a_column_index++){
-            A_table[a_row_index][a_column_index] = (double)d_table[d_row_index][d_column_index];
+            gsl_matrix_set(A_table,a_row_index,a_column_index,(double)d_table[d_row_index][d_column_index]);
         }
     }
     
@@ -249,7 +249,7 @@ void create__z_table(int numof_circuit_nodes, int numof_indie_voltage_sources, i
     element *elem = NULL;
     
     for(int i=0;i<numof_circuit_nodes+numof_indie_voltage_sources;i++){
-        z_table[i] = 0;
+        gsl_vector_set(z, i, 0);
     }
     
     // insert current sources into z table
@@ -261,14 +261,18 @@ void create__z_table(int numof_circuit_nodes, int numof_indie_voltage_sources, i
             int negative_node = id_for_node_in_hash(elem->second_terminal);
             
             if((positive_node != GROUND) && (negative_node != GROUND)){
-                z_table[positive_node-1] += -elem->value;
-                z_table[negative_node-1] += elem->value;
+                //z_table[positive_node-1] += -elem->value;
+                //z_table[negative_node-1] += elem->value;
+                gsl_vector_set(z, positive_node-1, gsl_vector_get(z, positive_node-1) + (elem->value*(-1)));
+                gsl_vector_set(z, negative_node-1, gsl_vector_get(z, negative_node-1) + elem->value);
             }
             else if((positive_node != GROUND) && (negative_node == GROUND)){
-                z_table[positive_node-1] += -elem->value;
+                //z_table[positive_node-1] += -elem->value;
+                gsl_vector_set(z, positive_node-1, gsl_vector_get(z, positive_node-1) + (elem->value*(-1)));
             }
             else if((positive_node == GROUND) && (negative_node != GROUND)){
-                z_table[negative_node-1] += elem->value;
+                //z_table[negative_node-1] += elem->value;
+                gsl_vector_set(z, negative_node-1, gsl_vector_get(z, negative_node-1) + elem->value);
             } 
         }
         
@@ -279,7 +283,8 @@ void create__z_table(int numof_circuit_nodes, int numof_indie_voltage_sources, i
     LL_FOREACH(head, elem){
         
         if(elem->element_type == elementTypeVoltageSource){
-            z_table[numof_circuit_nodes+index] += elem->value;
+            //z_table[numof_circuit_nodes+index] += elem->value;
+            gsl_vector_set(z,numof_circuit_nodes+index,gsl_vector_get(z,numof_circuit_nodes+index) + elem->value);
             index++;
         }
         
