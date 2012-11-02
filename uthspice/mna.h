@@ -28,7 +28,6 @@ int numberOfNodes(element *parsed_elements){
         
         }
         
-        
         node_item = NULL;
         
         // check if the node is already in the hashtable, if not add it
@@ -211,7 +210,7 @@ void calculate__d_table(int numof_indie_voltage_sources){
     }
 }
 
-void calculate__A_table(int numof_circuit_nodes, int numof_indie_voltage_sources){
+void calculate__A_matrix(int numof_circuit_nodes, int numof_indie_voltage_sources){
     
     // merge g table
     for(int i=0; i < numof_circuit_nodes;i++){
@@ -244,7 +243,7 @@ void calculate__A_table(int numof_circuit_nodes, int numof_indie_voltage_sources
 }
 
 // calculates the z table holding the know quantities of the parsed circuit
-void create__z_table(int numof_circuit_nodes, int numof_indie_voltage_sources, int numof_current_sources){
+void create__z_vector(int numof_circuit_nodes, int numof_indie_voltage_sources, int numof_current_sources){
     
     element *elem = NULL;
     

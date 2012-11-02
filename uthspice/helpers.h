@@ -34,17 +34,18 @@ char *name_of_element_for_type(element_type i){
     return NULL;
 }
 
+// takes the element type as a char and returns the enum'ed type of it
 element_type element_type_for_string(char element_as_string){
     
-    if(element_as_string == 'V'){
+    if(element_as_string == 'V' || element_as_string == 'v'){
         
         return elementTypeVoltageSource;
         
-    } else if (element_as_string == 'I'){
+    } else if (element_as_string == 'I' || element_as_string == 'i'){
         
         return elementTypeCurrentSource;
         
-    } else if (element_as_string == 'R'){
+    } else if (element_as_string == 'R' || element_as_string == 'r'){
         
         return elementTypeResistance;
         
@@ -125,6 +126,7 @@ void print_elements_parsed() {
     
 }
 
+// takes the name of a node as a string and assigns a unique int id to id
 int generate_uniqueid(char *string){
     
     char *endptr;
@@ -132,12 +134,16 @@ int generate_uniqueid(char *string){
     
     // node is alphanumeric
     if (endptr == string) {
+
+        struct node_data *node_item = NULL;
         
-        // TODO: this should first go through all the ids from 1 to num_of_nodes and assign a non-used one
-        // instead of using this stupid hack that created large integers
-        return string[0]+string[1]+string[3];
+        HASH_FIND_STR(nodes_hashtable,string,node_item);
+        
+        if(!node_item){
+            nodeid_index++;
+            return nodeid_index;
+        }
     
-    // return the proper int value form the numeric string
     } else {
     
         return value;
@@ -146,6 +152,8 @@ int generate_uniqueid(char *string){
     return -1;
 }
 
+// takes the name of a node and returns the (int) id
+// of it in the hashtable we have for all nodes
 int id_for_node_in_hash(char *nodename){
     
     struct node_data *node_item = NULL;
@@ -159,6 +167,25 @@ int id_for_node_in_hash(char *nodename){
     return -1;
 }
 
+// returns the position in z vector (know part of the linear equations) in
+// which the requested voltage source resides
+int z_index_position_for_voltagesource(char *vsource_name){
+    
+    int index = numof_circuit_nodes;
+    struct element *el;
+    
+    LL_FOREACH(head, el){
+        if(strcmp(el->element_name,vsource_name)==0){
+            return index;
+        }
+        index++;
+    }
+    
+    return -1;
+}
+
+// Reads an option line from the netlist (the ones starting with .) and
+// saves it in a linked list for future reference
 void parse_netlist_option(char **option_args){
     
     netlist_option *option = (struct netlist_option *) malloc( sizeof(struct netlist_option));
@@ -181,8 +208,6 @@ void parse_netlist_option(char **option_args){
     // PLOT/PRINT DC sweep option parsing
     else if( (strcmp(option_args[0],".PLOT") == 0) || (strcmp(option_args[0],".PRINT") == 0) ){
         
-        dc_sweep_plot = true;
-        
         option->option_type = optionTypePlot;
         char *tmp = strndup(option_args[1]+2, strlen(option_args[1])-3);
         option->node_name = tmp;
@@ -194,7 +219,7 @@ void parse_netlist_option(char **option_args){
                
     }
     
-    free(option);
+    
 }
 
 // prints the g_table in a human readable format
@@ -264,7 +289,7 @@ void print__c_table(int n,int m){
     printf("]\n");
 }
 
-void print__A_table(int n,int m){
+void print__A_matrix(int n,int m){
    printf("\nA = [\n");
     // print column indexes
     printf("\t");
@@ -286,7 +311,7 @@ void print__A_table(int n,int m){
     
 }
 
-void print__Z_table(int numof_circuit_nodes,int numof_voltage_sources){
+void print__Z_vector(int numof_circuit_nodes,int numof_voltage_sources){
     
     printf("\nz = [\n");
     for(int i=0;i< numof_circuit_nodes+numof_voltage_sources;i++){
@@ -295,6 +320,7 @@ void print__Z_table(int numof_circuit_nodes,int numof_voltage_sources){
     printf("]");
 }
 
+// replaces inductors with voltage sources of zero value (for DC)
 void replace_L_C (){
   
     element *temp_element;

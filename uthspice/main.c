@@ -68,7 +68,6 @@ int main(int argc, char * argv[])
     }
     
     
-    
     // open netlist file
     if((netlist_file = fopen(netlist_filename, "r"))){
         
@@ -105,7 +104,7 @@ int main(int argc, char * argv[])
             if(element_type_for_string(tokens[0][0])  == -1){
                 
                 printf("[!] Encountered element of uknown type: %s (line: %d)\n",tokens[0],line_number);
-                exit(-1);
+                
 
             }
             
@@ -160,82 +159,13 @@ int main(int argc, char * argv[])
     numof_indie_voltage_sources = numOfIndependentVoltageSources();
     numof_current_sources = numOfCurrentSources();
     
-    if(verbose){
-        struct node_data *s;
-        printf("\n");
-        for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
-            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
-        }
-        
-    }
-
     if(verbose) printf("\n[-] Circuit has %d nodes without the ground node.\n",numof_circuit_nodes);
     if(verbose) printf("[-] Circuit has %d independant Voltage sources.\n\n",numof_indie_voltage_sources);
-    
-    // Initialize G Table
-    g_table = (double **)malloc(numof_circuit_nodes * sizeof(double *));
-    for(int i=0; i < numof_circuit_nodes; i++){
-        g_table[i] = (double *)malloc(numof_circuit_nodes * sizeof(double));
-    }
-    
-    // Initialize B table
-    b_table = (int **)malloc(numof_circuit_nodes * sizeof(int *));
-    for(int i=0; i < numof_circuit_nodes; i++){
-        b_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
-    }
-    
-    // Initialize C table
-    c_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
-    for(int i=0; i < numof_indie_voltage_sources; i++){
-        c_table[i] = (int *)malloc(numof_circuit_nodes * sizeof(int));
-        
-    }
-    
-    // Initialize D table
-    d_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
-    for(int i=0; i < numof_indie_voltage_sources; i++){
-        d_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
-        
-    }
-    
-    // Initialize A table
-    //A_table = (double **)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double *));
-    //for(int i=0; i < numof_circuit_nodes+numof_indie_voltage_sources; i++){
-     //   A_table[i] = (double *)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double));
-   // }
-    A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
 
-    // initialize Z table
-    z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
-    
-    calculate__g_table(head,numof_circuit_nodes);
-    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    calculate__d_table(numof_indie_voltage_sources);
-    calculate__A_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    create__z_table(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
-    
-    if(verbose)print__g_table(numof_circuit_nodes);
-    if(verbose)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
-    if(verbose)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
-    print__A_table(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
-    print__Z_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    
-    
-    if(!dc_sweep && !cholesky_method && should_solve){
-        
-        LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
-    
+    if(should_solve){
+        solve();
     }
-    
-    free(g_table);
-    free(b_table);
-    free(c_table);
-    free(d_table);
-    
-    gsl_matrix_free(A_table);
-    gsl_vector_free(z);
-    
+       
     return 0;
 }
 

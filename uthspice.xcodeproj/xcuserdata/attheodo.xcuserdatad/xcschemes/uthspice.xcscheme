@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-v -i /Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/netlist5 -s"
+            argument = "-v -i /Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/netlist5_DC_SWEEP -s"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

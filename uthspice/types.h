@@ -7,7 +7,7 @@
 
 // various definitions
 #define MAX_TOKENS_IN_LINE 8
-#define MAX_TOKEN_LEN      10
+#define MAX_TOKEN_LEN      20
 
 #define GROUND 0
 
@@ -90,13 +90,13 @@ bool db_info = true;
 bool verbose = false;
 bool should_solve = false;
 
-// NETLIST OPTIONS
+int nodeid_index = 0;
 
+/* NETLIST OPTIONS */
 // Cholesky (SPD)
-bool cholesky_method = false;
+bool spd = false;
 // DC Sweep options
 bool dc_sweep = false;
-bool dc_sweep_plot = false;
 
 
 // circuit properties
@@ -113,6 +113,7 @@ int    **c_table = NULL;
 int    **d_table = NULL;
 
 gsl_matrix *A_table = NULL;
+gsl_permutation *perm_matrix = NULL;
 gsl_vector *z  = NULL;
 
 // list that holds the parsed elements, should always be initialized to NULL
