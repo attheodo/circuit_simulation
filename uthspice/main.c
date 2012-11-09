@@ -96,7 +96,7 @@ int main(int argc, char * argv[])
             tokens = tokenize(line);
             
             // create a new list node to hold the element attributes
-            if( (parsed_element = (struct element *) malloc( sizeof(struct element))) == NULL) exit(-1);
+            if( (parsed_element = (struct element *) malloc( sizeof(struct element))) == NULL) { printf("[!] Encountered error while allocating memory for parsed element\n"); exit(-1); };
             
             parsed_element->element_name = tokens[0];
             
@@ -135,7 +135,8 @@ int main(int argc, char * argv[])
 
             }
             
-                       
+            if(verbose) printf("line: %d\n",line_number);
+            //free(parsed_element); parsed_element = NULL;
             line_number++;
         
         }

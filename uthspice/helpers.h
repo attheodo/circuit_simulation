@@ -351,5 +351,4 @@ void replace_L_C (){
     }
     
     free(new_element);
-    free(temp_element);
 }
