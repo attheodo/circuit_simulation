@@ -58,6 +58,16 @@ struct node_data {
     
 };
 
+// parameteres passed to parsing threads
+struct thread_data {
+
+    int  thread_id;
+    int  start_line;
+    int  end_line;
+    
+
+};
+
 // simple enum for holding the type of circuit elements
 // we might parse
 typedef enum {
@@ -81,8 +91,16 @@ typedef enum {
 
 } option_types;
 
+char *netlist_filename;
+
+// rw lock for the list holdign th elements
+pthread_rwlock_t elements_list_lock;
+
+
 // simple BOOL typedef
 typedef enum { false, true } bool;
+
+bool didParseGroundNode = false;
 
 // whether to print debugging statements
 bool db_info = true;

@@ -77,6 +77,24 @@ element_type element_type_for_string(char element_as_string){
     return -1;
 }
 
+// opens a netlist file and counts the number of lines in it
+int numOfNetlistLines(char *filename){
+    int ch = 0, i = 0;
+	FILE *fd;
+	if (!(fd = fopen(filename, "r")))
+	{
+		fputs("could not open file!\n", stderr);
+		exit(-1);
+	}
+	while ((ch = fgetc(fd)) != EOF)
+	{
+		if (ch == '\n')
+			++i;
+	}
+    fclose(fd);
+    return i;
+}
+
 // takes the parsed line and returns an array of tokens split by " "
 char **tokenize(char *line)
 {
@@ -189,7 +207,7 @@ int z_index_position_for_voltagesource(char *vsource_name){
 void parse_netlist_option(char **option_args){
     
     netlist_option *option = (struct netlist_option *) malloc( sizeof(struct netlist_option));
-
+    
     // DC sweep option parsing
     if(strcmp(option_args[0],".DC") == 0){
         
@@ -213,14 +231,120 @@ void parse_netlist_option(char **option_args){
         option->node_name = tmp;
         
         printf("\n[-] Plotting option set\n\tVoltage results for node: %s\n",option->node_name);
-
+        
         // add it to the options list
         LL_APPEND(netlist_options, option);
-               
+        
     }
     
     
 }
+
+// opens the input netlist file and parses the assigned lines set
+// in thread_args into the global linked list (head)
+void *parse_input_netlist(void *thread_args) {
+    
+    FILE *netlist_file = NULL;
+    char *line = NULL;
+    int current_line = 0;
+    size_t len = 0;
+    ssize_t line_length;
+    element *parsed_element;
+    
+    struct thread_data *data = thread_args;
+    
+    int start_line = data->start_line-1;
+    int end_line = data->end_line-1;
+    
+    if((netlist_file = fopen(netlist_filename, "r"))){
+    
+        // parse the file line by line
+        while ((line_length = getline(&line, &len, netlist_file)) != -1) {
+        
+            if(current_line < start_line){
+                current_line++;
+                continue;
+            }
+            
+            char **tokens = NULL;
+            
+            // if line is a comment or empty line, skip it
+            if((strncmp(line, "*",1) == 0) || line_length <= 2) {
+                current_line++;
+                continue;
+            }
+            
+            // remove newline character from the end
+            line[strlen(line)-1] = 0;
+            
+            tokens = tokenize(line);
+            
+            // create a new list node to hold the element attributes
+            if( (parsed_element = (struct element *) malloc( sizeof(struct element))) == NULL) { printf("[!] Encountered error while allocating memory for parsed element\n"); exit(-1); };
+            
+            parsed_element->element_name = tokens[0];
+            
+            // encountered unknown element
+            if(element_type_for_string(tokens[0][0])  == -1){
+                printf("[!] Encountered element of uknown type: %s (line: %d)\n",tokens[0],current_line);
+            }
+            // encountered option
+            else if(element_type_for_string(tokens[0][0]) == elementTypeOption){
+                parse_netlist_option(tokens);
+            }
+            
+            // known netlist element
+            else {
+                parsed_element->element_type = element_type_for_string(tokens[0][0]);
+                
+                if(atoi(tokens[1]) == 0 || atoi(tokens[1]) == 0) didParseGroundNode = true;
+                
+                parsed_element->first_terminal = tokens[1];
+                parsed_element->second_terminal = tokens[2];
+                parsed_element->value = atof(tokens[3]);
+                
+                parsed_element->drain_terminal = tokens[1];
+                parsed_element->gate_terminal = tokens[2];
+                parsed_element->source_terminal = tokens[3];
+                parsed_element->bulk_terminal = tokens[4];
+                parsed_element->gate_length = atof(tokens[6]+2);
+                parsed_element->gate_width = atof(tokens[7]+2);
+                
+                // add it to the list
+                if (pthread_rwlock_wrlock(&elements_list_lock) != 0) {
+                    fprintf(stderr,"[!] Error: elements_list_lock: can't acquire write lock\n");
+                    exit(-1);
+                }
+                
+                LL_APPEND(head,parsed_element);
+                
+                pthread_rwlock_unlock(&elements_list_lock);
+
+                
+            }
+            
+            if(current_line == end_line){
+                break;
+            }
+            
+            current_line++;
+
+        
+            
+        }
+        // close gracefully the file
+         fclose(netlist_file);
+     
+    } else {
+         // fopen error
+         printf("\n[!] Error: %s\n\n",strerror(errno));
+         exit(-1);
+     }
+
+    pthread_exit(NULL);
+}
+
+
 
 // prints the g_table in a human readable format
 void print__g_table(int size){
@@ -349,6 +473,4 @@ void replace_L_C (){
         }
       
     }
-    
-    free(new_element);
 }
