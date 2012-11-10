@@ -92,9 +92,11 @@ typedef enum {
 } option_types;
 
 char *netlist_filename;
+char *dcoutput_filename;
 
 // rw lock for the list holdign th elements
 pthread_rwlock_t elements_list_lock;
+pthread_rwlock_t options_list_lock;
 
 
 // simple BOOL typedef
@@ -115,6 +117,7 @@ int nodeid_index = 0;
 bool spd = false;
 // DC Sweep options
 bool dc_sweep = false;
+bool found_plotting_node = false;
 
 
 // circuit properties

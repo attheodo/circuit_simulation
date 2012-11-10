@@ -31,6 +31,7 @@ void print_help(const char *name)
     printf("\n\tAvailable options:\n\n \t-i FILE\t\t The netlist file to analyze\t\t\t[REQUIRED]\n");
     printf("\t-s\t\t\t Solve the MNA system. LU or Cholesky if SPD is set.\t[OPTIONAL]\n");
     printf("\t-v\t\t\t Verbose mode (prints lots of stuff)\t[OPTIONAL]\n");
+    printf("\t-o\t\t\t Output file for DC sweeping\t[OPTIONAL]\n");
     exit(-1);
 }
 
@@ -44,7 +45,7 @@ int main(int argc, char * argv[])
     int thread_create_status,option = 0;
     
    
-    while ((option = getopt (argc, argv, "svi:")) != -1)
+    while ((option = getopt (argc, argv, "svi:o::")) != -1)
     {
         switch (option)
         {
@@ -56,6 +57,9 @@ int main(int argc, char * argv[])
                 break;
             case 's':
                 should_solve = true;
+                break;
+            case 'o':
+                dcoutput_filename = strdup(optarg);
                 break;
             default:
                 print_help(argv[0]);
@@ -83,11 +87,16 @@ int main(int argc, char * argv[])
     
     int chunk_size = lines_in_netlist / numofcpus;
     
-    // initialize the elements list lock
+    // initialize the  list locks
     if (pthread_rwlock_init(&elements_list_lock,NULL) != 0) {
-        fprintf(stderr,"[!] Elements list Lock init failed\n");
+        fprintf(stderr,"[!] Lock init failed\n");
         exit(-1);
     }
+    if (pthread_rwlock_init(&options_list_lock,NULL) != 0) {
+        fprintf(stderr,"[!] Lock init failed\n");
+        exit(-1);
+    }
+
     
     // start the (s)pwnage
     for (int i=0; i < lines_in_netlist/chunk_size; i++){
@@ -117,10 +126,8 @@ int main(int argc, char * argv[])
     if(!didParseGroundNode) printf("\n[WARNING] Netlist file looked legit but no ground node found!\n\n");
     
     replace_L_C();
-    // print the elements parsed
     print_elements_parsed();
     
-        
     numof_circuit_nodes = numberOfNodes(head);
     numof_indie_voltage_sources = numOfIndependentVoltageSources();
     numof_current_sources = numOfCurrentSources();

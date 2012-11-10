@@ -5,9 +5,6 @@
 //  Created by Athanasios Theodoridis (461) and Aris Eleftheriadis (460) on 4/10/12.
 //  
 
-
-
-
 void LU_solve(int size){
     
     gsl_vector *x;
@@ -44,8 +41,23 @@ void LU_solve(int size){
 
 void perform_DC_sweep(){
     
-    struct netlist_option *option,*option2;
+    struct netlist_option *option, *option2;
     char *plotting_node;
+    FILE *output_file = NULL;
+    
+    if(dcoutput_filename == NULL) {
+        
+        printf("[-] Saving DC sweep output to dcsweep_output.txt");
+        dcoutput_filename = "dc_sweep_output.txt";
+    
+    }
+    
+    // open the output file
+    if ((output_file = fopen(dcoutput_filename, "w+")) == NULL) {
+        fprintf(stderr, "Can't open output file %s!\n",dcoutput_filename);
+        exit(1);
+    }
+
     
     // find the .dc sweep option in the options linked list we keep for this
     LL_FOREACH(netlist_options, option){
@@ -79,7 +91,7 @@ void perform_DC_sweep(){
                 
                 int x_index = id_for_node_in_hash(plotting_node);
                 
-                printf("\t%s=%g\t\t\t\t\tV%s=%f\n",option->node_name,start_value,plotting_node,gsl_vector_get(x, x_index));
+                fprintf(stdout,"\t%s=%g\t\t\t\t\tV%s=%f\n",option->node_name,start_value,plotting_node,gsl_vector_get(x, x_index));
                 
                 gsl_vector_free(x);
             
@@ -153,7 +165,7 @@ void solve(){
     
     LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
         
-    if(dc_sweep){
+    if(dc_sweep && found_plotting_node){
         
         perform_DC_sweep();
         

@@ -92,7 +92,7 @@ int numOfNetlistLines(char *filename){
 			++i;
 	}
     fclose(fd);
-    return i;
+    return i+1;
 }
 
 // takes the parsed line and returns an array of tokens split by " "
@@ -217,14 +217,21 @@ void parse_netlist_option(char **option_args){
         option->start_value = atof(option_args[2]);
         option->end_value = atof(option_args[3]);
         option->step = atof(option_args[4]);
-        printf("[-] DC sweep option set \n\tNode: %s\tstart_value: %f\tend_value: %f\tstep: %f\n",option->node_name,option->start_value,option->end_value,option->step);
+        printf("\n[-] DC sweep option set \n\tNode: %s\tstart_value: %f\tend_value: %f\tstep: %f\n",option->node_name,option->start_value,option->end_value,option->step);
         
-        // add it to the list holding options
+      
+        if (pthread_rwlock_wrlock(&options_list_lock) != 0) {
+            fprintf(stderr,"[!] Error: options_list_lock: can't acquire write lock\n");
+            exit(-1);
+        }
         LL_APPEND(netlist_options, option);
+        pthread_rwlock_unlock(&options_list_lock);
         
     }
     // PLOT/PRINT DC sweep option parsing
     else if( (strcmp(option_args[0],".PLOT") == 0) || (strcmp(option_args[0],".PRINT") == 0) ){
+        
+        found_plotting_node = true;
         
         option->option_type = optionTypePlot;
         char *tmp = strndup(option_args[1]+2, strlen(option_args[1])-3);
@@ -233,10 +240,15 @@ void parse_netlist_option(char **option_args){
         printf("\n[-] Plotting option set\n\tVoltage results for node: %s\n",option->node_name);
         
         // add it to the options list
+        if (pthread_rwlock_wrlock(&options_list_lock) != 0) {
+            fprintf(stderr,"[!] Error: options_list_lock: can't acquire write lock\n");
+            exit(-1);
+        }
         LL_APPEND(netlist_options, option);
+        pthread_rwlock_unlock(&options_list_lock);
+
         
     }
-    
     
 }
 
@@ -297,7 +309,7 @@ void *parse_input_netlist(void *thread_args) {
             else {
                 parsed_element->element_type = element_type_for_string(tokens[0][0]);
                 
-                if(atoi(tokens[1]) == 0 || atoi(tokens[1]) == 0) didParseGroundNode = true;
+                if(atoi(tokens[1]) == 0 || atoi(tokens[2]) == 0) didParseGroundNode = true;
                 
                 parsed_element->first_terminal = tokens[1];
                 parsed_element->second_terminal = tokens[2];

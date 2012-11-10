@@ -59,7 +59,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "-v -i /Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/ibm2"
+            argument = "-v  -i /Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/ibm1 -o /Users/attheodo/Documents/University/Circuit\ Simulation/project/uthspice/output_test.txt"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
