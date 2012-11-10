@@ -78,7 +78,8 @@ int main(int argc, char * argv[])
     pthread_t parsing_threads[numofcpus];
     struct thread_data parsing_threads__data_array[numofcpus];
     
-    if(verbose) printf("\n[-] Netlist has %d lines (%d \\n's to be precise). Assigning them to %d cores.\n",lines_in_netlist,lines_in_netlist,numofcpus);
+    if(verbose) printf("\n[-] Netlist has %d lines.\n",lines_in_netlist);
+    if(verbose) printf("\n[-] Spawning %d threads... \n",numofcpus);
     
     int chunk_size = lines_in_netlist / numofcpus;
     
@@ -102,12 +103,15 @@ int main(int argc, char * argv[])
         parsing_threads__data_array[i].end_line = end_line;
         
         thread_create_status = pthread_create(&parsing_threads[i], NULL, parse_input_netlist, (void *) &parsing_threads__data_array[i]);
+    
     }
     
     // wait for all the threads to complete
     for(int i = 0; i < lines_in_netlist/chunk_size; i++) {
+        
         int rc = pthread_join(parsing_threads[i], NULL);
-        if(rc < 0) { fprintf(stderr,"[!] Error encountered while trying to join thread with main\n"); }
+        if(rc < 0) { fprintf(stderr,"[!] Error encountered while trying to join thread with main thread\n"); }
+    
     }
     
     if(!didParseGroundNode) printf("\n[WARNING] Netlist file looked legit but no ground node found!\n\n");
