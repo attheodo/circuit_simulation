@@ -1,0 +1,15 @@
+* comment
+R9 node_5 0 2
+R10 node_3 node_2 0.2
+R11 node_7 node_6 2
+I1 node_4 node_8 1e-3
+I2 0 node_6 1e-3
+R1 node_1 node_5 1.5
+R2 node_1 node_2 1
+R3 node_5 node_2 50
+R4 node_5 node_6 0.1
+R5 node_2 node_6 1.5
+R6 node_3 node_4 0.1
+R7 node_8 0 1e3
+R8 node_4 0 10
+
