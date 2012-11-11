@@ -77,6 +77,8 @@ element_type element_type_for_string(char element_as_string){
     return -1;
 }
 
+#pragma mark - Parsing Related
+
 // opens a netlist file and counts the number of lines in it
 int numOfNetlistLines(char *filename){
     int ch = 0, i = 0;
@@ -249,7 +251,29 @@ void parse_netlist_option(char **option_args){
 
         
     }
-    
+    // .OPTION SPD
+    // PLOT/PRINT DC sweep option parsing
+    else if(strcmp(option_args[0],".OPTIONS") == 0){
+        
+        spd = true;
+        
+        option->option_type = optionTypeOther;
+        char *tmp = strdup(option_args[1]);
+        option->other_option_field = tmp;
+        
+        printf("\n[-] Option SPD set. Solving with Cholesky.\n");
+        
+        // add it to the options list
+        if (pthread_rwlock_wrlock(&options_list_lock) != 0) {
+            fprintf(stderr,"[!] Error: options_list_lock: can't acquire write lock\n");
+            exit(-1);
+        }
+        LL_APPEND(netlist_options, option);
+        pthread_rwlock_unlock(&options_list_lock);
+        
+        
+    }
+
 }
 
 // opens the input netlist file and parses the assigned lines set
@@ -357,6 +381,7 @@ void *parse_input_netlist(void *thread_args) {
 }
 
 
+#pragma mark - Matrix pretty printing
 
 // prints the g_table in a human readable format
 void print__g_table(int size){

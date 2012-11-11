@@ -40,7 +40,10 @@ typedef struct element {
 typedef struct netlist_option {
     
     int option_type;
+    
     char *node_name;
+    char *other_option_field;
+    
     float start_value;
     float end_value;
     float step;
@@ -87,7 +90,8 @@ typedef enum {
 typedef enum {
 
     optionTypeDCSweep = 0,
-    optionTypePlot
+    optionTypePlot,
+    optionTypeOther
 
 } option_types;
 
@@ -97,7 +101,6 @@ char *dcoutput_filename;
 // rw lock for the list holdign th elements
 pthread_rwlock_t elements_list_lock;
 pthread_rwlock_t options_list_lock;
-
 
 // simple BOOL typedef
 typedef enum { false, true } bool;
@@ -112,9 +115,9 @@ bool should_solve = false;
 
 int nodeid_index = 0;
 
-/* NETLIST OPTIONS */
-// Cholesky (SPD)
+// Solver using Cholesky (SPD)
 bool spd = false;
+
 // DC Sweep options
 bool dc_sweep = false;
 bool found_plotting_node = false;

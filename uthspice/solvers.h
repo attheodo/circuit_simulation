@@ -9,28 +9,31 @@ void LU_solve(int size){
     
     gsl_vector *x;
     
-    int perm_sign = 0;
+    int perm_sign,solve_status = 0;
     
     x = gsl_vector_alloc (size);
-    
-    printf("\n\n[-] Solving %dx%d system with LU decomposition\n",size,size);
     
     perm_matrix = gsl_permutation_alloc(size);
 
     gsl_set_error_handler_off();
-    gsl_linalg_LU_decomp (A_table, perm_matrix, &perm_sign);
     
-    int status = gsl_linalg_LU_solve (A_table, perm_matrix, z, x);
+    if(!spd){
+        printf("\n\n[-] Solving %dx%d system with LU decomposition\n",size,size);
+        gsl_linalg_LU_decomp (A_table, perm_matrix, &perm_sign);
+        solve_status = gsl_linalg_LU_solve (A_table, perm_matrix, z, x);
+    } else {
+        printf("\n\n[-] Solving %dx%d system with Cholesky decomposition\n",size,size);
+        gsl_linalg_cholesky_decomp(A_table);
+        solve_status = gsl_linalg_cholesky_solve(A_table, z, x);
+    }
     
-   
-    if(status == 1){
-      
+     
+    if(solve_status == 1){
         printf("\n[!] The circuit has no solution (matrix is singular)\n");
         gsl_vector_free(x);
         return;
     
     } else {
-      
         printf("\nx = [\n");
         gsl_vector_fprintf (stdout, x, "\t%g");
         printf("]\n");
@@ -83,9 +86,15 @@ void perform_DC_sweep(){
                 gsl_vector *x = gsl_vector_alloc(numof_indie_voltage_sources+numof_circuit_nodes);
                 gsl_vector_set(z,z_index,start_value);
                 
-                int status = gsl_linalg_LU_solve (A_table, perm_matrix, z, x);
+                int solve_status = 0;
                 
-                if(status != 0) {
+                if(!spd){
+                    solve_status = gsl_linalg_LU_solve (A_table, perm_matrix, z, x);
+                } else {
+                    solve_status = gsl_linalg_cholesky_solve(A_table, z, x);
+                }
+                
+                if(solve_status != 0) {
                     printf("[!] FATAL ERROR: Error solving the system\n");
                 }
                 
@@ -140,11 +149,6 @@ void solve(){
         
     }
     
-    // Initialize A table
-    //A_table = (double **)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double *));
-    //for(int i=0; i < numof_circuit_nodes+numof_indie_voltage_sources; i++){
-    //   A_table[i] = (double *)malloc((numof_circuit_nodes+numof_indie_voltage_sources) * sizeof(double));
-    // }
     A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
     
     // initialize Z table
@@ -166,9 +170,7 @@ void solve(){
     LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
         
     if(dc_sweep && found_plotting_node){
-        
         perform_DC_sweep();
-        
     }
     
     free(g_table);
