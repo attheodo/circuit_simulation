@@ -129,12 +129,16 @@ void solve(){
         g_table[i] = (double *)malloc(numof_circuit_nodes * sizeof(double));
     }
     
+    calculate__g_table(head,numof_circuit_nodes);
+    
     // Initialize B table
     b_table = (int **)malloc(numof_circuit_nodes * sizeof(int *));
     for(int i=0; i < numof_circuit_nodes; i++){
         b_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
     }
     
+    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
+
     // Initialize C table
     c_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
     for(int i=0; i < numof_indie_voltage_sources; i++){
@@ -142,22 +146,21 @@ void solve(){
         
     }
     
+    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    
     // Initialize D table
     d_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
     for(int i=0; i < numof_indie_voltage_sources; i++){
         d_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
         
     }
-    
+    calculate__d_table(numof_indie_voltage_sources);
+
     A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
     
     // initialize Z table
     z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
     
-    calculate__g_table(head,numof_circuit_nodes);
-    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    calculate__d_table(numof_indie_voltage_sources);
     calculate__A_matrix(numof_circuit_nodes, numof_indie_voltage_sources);
     create__z_vector(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
     
@@ -167,16 +170,17 @@ void solve(){
     if(verbose)print__A_matrix(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
     if(verbose)print__Z_vector(numof_circuit_nodes, numof_indie_voltage_sources);
     
+    free(g_table);
+    free(b_table);
+    free(c_table);
+    free(d_table);
+    
     LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
         
     if(dc_sweep && found_plotting_node){
         perform_DC_sweep();
     }
     
-    free(g_table);
-    free(b_table);
-    free(c_table);
-    free(d_table);
     
     gsl_matrix_free(A_table);
     gsl_vector_free(z);
