@@ -187,3 +187,245 @@ void solve(){
     gsl_permutation_free(perm_matrix);
     
 }
+
+/* Iterative Solvers */
+
+// norm calculation
+double norm(gsl_vector *vector,int num_of_nodes){
+    double sum = 0.0;
+    
+    for(int i=0;i<num_of_nodes;i++){
+        sum = sum + pow(gsl_vector_get(vector,i),2);
+    }
+    
+    sum = sqrt(sum);
+    return(sum);
+}
+
+// preconditioner solver
+gsl_vector *precond_solver(gsl_vector *m,gsl_vector *r,int num_of_nodes){
+    int i;
+    gsl_vector *z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
+    
+    for(i=0;i<num_of_nodes;i++){
+        gsl_vector_set(z,i,gsl_vector_get(m,i)*gsl_vector_get(r,i));
+    }
+    
+    return(z);
+}
+
+// Matrix Vector Product
+
+gsl_vector *product_MV(gsl_matrix *A_table,gsl_vector *p,int num_of_nodes){
+   
+    double sum = 0.0;
+    gsl_vector *q;
+    
+    q = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
+    
+    for(int i=0;i<num_of_nodes;i++){
+        sum=0.0;
+        for(int j=0;j<num_of_nodes;j++){
+            sum = sum + gsl_matrix_get(A_table,i,j)*gsl_vector_get(p,j);
+        }
+        
+        gsl_vector_set(q,i,sum);
+        
+    }
+    return(q);
+}
+
+// biCG implementation
+void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_of_nodes,gsl_vector *m){
+	
+    // transposed A
+	gsl_matrix *A_T;
+	int iter = 0;
+	gsl_vector *z,*z_1,*p,*p_1,*q,*q_1,*r,*r_1,*Ax_product;
+	double b_norm,rho,rho_1,alpha,beta,omega;
+	
+    // vector allocations
+	r   = gsl_vector_alloc(num_of_nodes);
+	r_1 = gsl_vector_alloc(num_of_nodes);
+	z   = gsl_vector_alloc(num_of_nodes);
+	z_1 = gsl_vector_alloc(num_of_nodes);
+	p   = gsl_vector_alloc(num_of_nodes);
+	p_1 = gsl_vector_alloc(num_of_nodes);
+	q   = gsl_vector_alloc(num_of_nodes);
+	q_1 = gsl_vector_alloc(num_of_nodes);
+	
+    Ax_product = gsl_vector_alloc(num_of_nodes);
+	
+	// Calculate the transpode of A
+	A_T = gsl_matrix_alloc(num_of_nodes,num_of_nodes);
+	for(int i=0;i<num_of_nodes;i++){
+	    for(int j=0;j<num_of_nodes;j++){
+            gsl_matrix_set(A_T,j,i,gsl_matrix_get(A_table,i,j));
+	    }
+	}
+	
+	Ax_product = product_MV(A_table,x,num_of_nodes);
+	
+	// r = b-Ax
+	for(int i=0;i<num_of_nodes;i++){
+	    gsl_vector_set(r,i,gsl_vector_get(b,i) - gsl_vector_get(Ax_product,i));
+	    gsl_vector_set(r_1,i,gsl_vector_get(b,i) - gsl_vector_get(Ax_product,i));
+	}
+    
+	
+	//check if b_norm is zero
+	b_norm = norm(z,num_of_nodes);
+	if(b_norm == 0){
+	    b_norm = 1;
+	}
+    
+	while( (norm(r,num_of_nodes)/b_norm > itol) && (iter < num_of_nodes) ) {
+	    iter=iter+1;
+	    //preconditioner solve
+	    z = precond_solver(m,r,num_of_nodes);
+	    z_1 = precond_solver(m,r_1,num_of_nodes);
+	    
+	    rho = 0;
+	    for(int i=0;i<num_of_nodes;i++){
+            rho = rho + gsl_vector_get(r_1,i)*gsl_vector_get(z,i);
+	    }
+	    if(fabs(rho) < 1e-14){
+            printf("[!] Algorithm Failure due to rho < 1e-14\n");
+            exit(2); //algorithm failure
+	    }
+        
+	    if(iter==1){
+            for(int i=0;i<num_of_nodes;i++){
+                //copy z to p
+                gsl_vector_set(p,i,gsl_vector_get(z,i));
+                gsl_vector_set(p_1,i,gsl_vector_get(z_1,i));
+            }
+	    }
+	    else{
+           
+            beta = rho/rho_1;
+            
+            for(int i=0;i<num_of_nodes;i++){
+                gsl_vector_set(p,i,gsl_vector_get(z,i) + beta*gsl_vector_get(p,i));
+                gsl_vector_set(p_1,i,gsl_vector_get(z_1,i) + beta*gsl_vector_get(p_1,i));
+            }
+	    }
+	    
+	    rho_1 = rho;
+	    q = product_MV(A_table,p,num_of_nodes);
+	    q_1 = product_MV(A_T,p_1,num_of_nodes);
+	    
+	    omega=0;
+        
+	    for(int i=0;i<num_of_nodes;i++){
+            omega = omega + gsl_vector_get(p_1,i)*gsl_vector_get(q,i);
+	    }
+        
+	    if(fabs(omega) < 1e-14){
+            printf("[!] Algorithm Failure due to omega < 1e-14\n");
+            exit(2); //algorithm failure
+	    }
+	    alpha = rho/omega;
+	    
+	    for(int i=0;i<num_of_nodes;i++){
+	        gsl_vector_set(x,i,gsl_vector_get(x,i) + alpha*gsl_vector_get(p,i));
+            gsl_vector_set(r,i,gsl_vector_get(r,i) - alpha*gsl_vector_get(q,i));
+            gsl_vector_set(r_1,i,gsl_vector_get(r_1,i) - alpha*gsl_vector_get(q_1,i));
+	    }
+		
+	}
+	
+	for(int i=0;i<num_of_nodes;i++){
+	    printf("x[%d] = %f\n",i,gsl_vector_get(x,i));
+	}
+	
+	free(r);
+	free(p);
+	free(q);
+	free(z);
+	free(Ax_product);
+	free(r_1);
+	free(p_1);
+	free(q_1);
+	free(z_1);
+	free(A_T);
+}
+
+// CG algorithm
+void CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *z,double itol,int num_of_nodes,gsl_vector *m){
+	
+	gsl_vector *r,*p,*q,*z_1,*Ax_product;
+	double b_norm,rho,rho_1,alpha,beta,ptq;
+	int iter=0;
+	
+	r   = gsl_vector_alloc(num_of_nodes);
+	p   = gsl_vector_alloc(num_of_nodes);
+	q   = gsl_vector_alloc(num_of_nodes);
+	z_1 = gsl_vector_alloc(num_of_nodes);
+	Ax_product = gsl_vector_alloc(num_of_nodes);
+    
+    Ax_product = product_MV(A_table,x,num_of_nodes);
+	
+	// r=b-Ax
+	for(int i=0;i<num_of_nodes;i++){
+	    gsl_vector_set(r,i,gsl_vector_get(z,i) - gsl_vector_get(Ax_product,i));
+	}
+	
+	//check if b_norm is zero
+	b_norm = norm(z,num_of_nodes);
+	if(b_norm == 0){
+	    b_norm = 1;
+	}
+	
+	while( (norm(r,num_of_nodes)/b_norm > itol) && (iter < num_of_nodes) ) {
+	    
+	    iter=iter+1;
+        
+	    //preconditioner solve
+	    z_1 = precond_solver(m,r,num_of_nodes);
+	    
+	    rho = 0;
+	    for(int i=0;i<num_of_nodes;i++){
+            rho = rho + gsl_vector_get(r,i)*gsl_vector_get(z_1,i);
+	    }
+	    if(iter==1){
+            for(int i=0;i<num_of_nodes;i++){
+                //copy z to p
+                gsl_vector_set(p,i,gsl_vector_get(z_1,i));
+            }
+	    }
+	    else{
+            beta = rho/rho_1;
+            for(int i=0;i<num_of_nodes;i++){
+                gsl_vector_set(p,i,gsl_vector_get(z_1,i) + beta*gsl_vector_get(p,i));
+            }
+            
+	    }
+	    rho_1 = rho;
+		
+		
+	    q = product_MV(A_table,p,num_of_nodes);
+	    ptq=0;
+	    for(int i=0;i<num_of_nodes;i++){
+            ptq = ptq + gsl_vector_get(p,i)*gsl_vector_get(q,i);
+	    }
+	    alpha = rho/ptq;
+	    for(int i=0;i<num_of_nodes;i++){
+            gsl_vector_set(x,i,gsl_vector_get(x,i) + alpha*gsl_vector_get(p,i));
+            gsl_vector_set(r,i,gsl_vector_get(r,i) - alpha*gsl_vector_get(q,i));
+	    }
+        
+	}
+	
+	for(int i=0;i<num_of_nodes;i++){
+		printf("x[%d] = %f\n",i,gsl_vector_get(x,i)); 
+	}
+    
+	free(r);
+	free(p);
+	free(q);
+	free(z_1);
+	free(Ax_product);
+
+}
+
