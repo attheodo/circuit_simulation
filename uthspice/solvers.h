@@ -100,7 +100,7 @@ void perform_DC_sweep(){
                 
                 int x_index = id_for_node_in_hash(plotting_node);
                 
-                fprintf(stdout,"\t%s=%g\t\t\t\t\tV%s=%f\n",option->node_name,start_value,plotting_node,gsl_vector_get(x, x_index));
+                fprintf(output_file,"\t%s=%g\t\t\t\t\tV%s=%f\n",option->node_name,start_value,plotting_node,gsl_vector_get(x, x_index));
                 
                 gsl_vector_free(x);
             
