@@ -175,8 +175,19 @@ void solve(){
     free(c_table);
     free(d_table);
     
-    LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
+    // non-iterative methods
+    if(!bi_conjgrad && !conjgrad){
+        LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
+    }
+    // conjugate gradients
+    else if(!bi_conjgrad && conjgrad){
         
+    }
+    // bi-conjugate gradients
+    else if(bi_conjgrad){
+        
+    }
+    
     if(dc_sweep && found_plotting_node){
         perform_DC_sweep();
     }

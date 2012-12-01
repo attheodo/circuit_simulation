@@ -115,8 +115,11 @@ bool should_solve = false;
 
 int nodeid_index = 0;
 
-// Solver using Cholesky (SPD)
 bool spd = false;
+bool iter = false;
+bool conjgrad = false;
+bool bi_conjgrad = false;
+float itol = 1e-3;
 
 // DC Sweep options
 bool dc_sweep = false;

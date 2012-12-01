@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
+#include <math.h>
 #include <gsl/gsl_linalg.h>
 #include <pthread.h>
 #include "utarray.h"
@@ -21,7 +22,6 @@
 #include "helpers.h"
 #include "mna.h"
 #include "solvers.h"
-
 
 
 // prints a simple help message
@@ -41,12 +41,9 @@ void print_help(const char *name)
 int main(int argc, char * argv[])
 {
 
-    
     int thread_create_status,option = 0;
     
-   
-    while ((option = getopt (argc, argv, "svi:o::")) != -1)
-    {
+    while ((option = getopt (argc, argv, "svi:o::")) != -1){
         switch (option)
         {
             case 'v':
