@@ -112,92 +112,6 @@ void perform_DC_sweep(){
 
 }
 
-void solve(){
-    
-    if(verbose){
-        struct node_data *s;
-        printf("\n");
-        for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
-            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
-        }
-        
-    }
-    
-    // Initialize G Table
-    g_table = (double **)malloc(numof_circuit_nodes * sizeof(double *));
-    for(int i=0; i < numof_circuit_nodes; i++){
-        g_table[i] = (double *)malloc(numof_circuit_nodes * sizeof(double));
-    }
-    
-    calculate__g_table(head,numof_circuit_nodes);
-    
-    // Initialize B table
-    b_table = (int **)malloc(numof_circuit_nodes * sizeof(int *));
-    for(int i=0; i < numof_circuit_nodes; i++){
-        b_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
-    }
-    
-    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
-
-    // Initialize C table
-    c_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
-    for(int i=0; i < numof_indie_voltage_sources; i++){
-        c_table[i] = (int *)malloc(numof_circuit_nodes * sizeof(int));
-        
-    }
-    
-    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    
-    // Initialize D table
-    d_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
-    for(int i=0; i < numof_indie_voltage_sources; i++){
-        d_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
-        
-    }
-    calculate__d_table(numof_indie_voltage_sources);
-
-    A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
-    
-    // initialize Z table
-    z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
-    
-    calculate__A_matrix(numof_circuit_nodes, numof_indie_voltage_sources);
-    create__z_vector(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
-    
-    if(verbose)print__g_table(numof_circuit_nodes);
-    if(verbose)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
-    if(verbose)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
-    if(verbose)print__A_matrix(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
-    if(verbose)print__Z_vector(numof_circuit_nodes, numof_indie_voltage_sources);
-    
-    free(g_table);
-    free(b_table);
-    free(c_table);
-    free(d_table);
-    
-    // non-iterative methods
-    if(!bi_conjgrad && !conjgrad){
-        LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
-    }
-    // conjugate gradients
-    else if(!bi_conjgrad && conjgrad){
-        
-    }
-    // bi-conjugate gradients
-    else if(bi_conjgrad){
-        
-    }
-    
-    if(dc_sweep && found_plotting_node){
-        perform_DC_sweep();
-    }
-    
-    
-    gsl_matrix_free(A_table);
-    gsl_vector_free(z);
-    gsl_permutation_free(perm_matrix);
-    
-}
 
 /* Iterative Solvers */
 
@@ -249,6 +163,10 @@ gsl_vector *product_MV(gsl_matrix *A_table,gsl_vector *p,int num_of_nodes){
 // biCG implementation
 void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_of_nodes,gsl_vector *m){
 	
+    if(verbose) {
+        printf("[-] Solving with Bi-Conjugate Gradients iterative method\n");
+    }
+
     // transposed A
 	gsl_matrix *A_T;
 	int iter = 0;
@@ -365,6 +283,10 @@ void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_o
 // CG algorithm
 void CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *z,double itol,int num_of_nodes,gsl_vector *m){
 	
+    if(verbose) {
+        printf("[-] Solving with Conjugate Gradients iterative method\n");
+    }
+    
 	gsl_vector *r,*p,*q,*z_1,*Ax_product;
 	double b_norm,rho,rho_1,alpha,beta,ptq;
 	int iter=0;
@@ -439,4 +361,117 @@ void CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *z,double itol,int num_of_n
 	free(Ax_product);
 
 }
+
+void solve(){
+    
+    if(verbose){
+        struct node_data *s;
+        printf("\n");
+        for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
+            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
+        }
+        
+    }
+    
+    // Initialize G Table
+    g_table = (double **)malloc(numof_circuit_nodes * sizeof(double *));
+    for(int i=0; i < numof_circuit_nodes; i++){
+        g_table[i] = (double *)malloc(numof_circuit_nodes * sizeof(double));
+    }
+    
+    calculate__g_table(head,numof_circuit_nodes);
+    
+    // Initialize B table
+    b_table = (int **)malloc(numof_circuit_nodes * sizeof(int *));
+    for(int i=0; i < numof_circuit_nodes; i++){
+        b_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
+    }
+    
+    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    
+    // Initialize C table
+    c_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
+    for(int i=0; i < numof_indie_voltage_sources; i++){
+        c_table[i] = (int *)malloc(numof_circuit_nodes * sizeof(int));
+        
+    }
+    
+    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
+    
+    // Initialize D table
+    d_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
+    for(int i=0; i < numof_indie_voltage_sources; i++){
+        d_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
+        
+    }
+    calculate__d_table(numof_indie_voltage_sources);
+    
+    A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
+    
+    // initialize Z table
+    z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
+    
+    calculate__A_matrix(numof_circuit_nodes, numof_indie_voltage_sources);
+    create__z_vector(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
+    
+    if(verbose)print__g_table(numof_circuit_nodes);
+    if(verbose)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
+    if(verbose)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
+    if(verbose)print__A_matrix(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
+    if(verbose)print__Z_vector(numof_circuit_nodes, numof_indie_voltage_sources);
+    
+    free(g_table);
+    free(b_table);
+    free(c_table);
+    free(d_table);
+    
+    // non-iterative methods
+    if(!bi_conjgrad && !conjgrad){
+        LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
+    }
+   
+    // conjugate gradients
+    else {
+        
+        gsl_vector *init_guess,*m;
+        
+        m = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
+        init_guess = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
+        
+        for(int i=0;i<numof_circuit_nodes;i++){
+            gsl_vector_set(init_guess,i,0.0);
+        }
+        
+        for(int i=0;i<numof_circuit_nodes;i++){
+            
+            if(gsl_matrix_get(A_table,i,i)!= 0){
+                gsl_vector_set(m,i,1/gsl_matrix_get(A_table,i,i));
+            } else {
+                gsl_vector_set(m,i,1.0);
+            }
+        }
+        
+        if(!bi_conjgrad && conjgrad){
+            CG(init_guess,A_table,z,itol,numof_indie_voltage_sources+numof_circuit_nodes,m);
+        }
+        // bi-conjugate gradients
+        else if(bi_conjgrad){
+            Bi_CG(init_guess,A_table,z,itol,numof_indie_voltage_sources+numof_circuit_nodes,m);
+        }
+        
+        gsl_vector_free(init_guess);
+        gsl_vector_free(m);
+    }
+    
+    if(dc_sweep && found_plotting_node){
+        perform_DC_sweep();
+    }
+    
+    
+    gsl_matrix_free(A_table);
+    gsl_vector_free(z);
+    gsl_permutation_free(perm_matrix);
+    
+}
+
 
