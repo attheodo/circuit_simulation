@@ -164,7 +164,7 @@ gsl_vector *product_MV(gsl_matrix *A_table,gsl_vector *p,int num_of_nodes){
 void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_of_nodes,gsl_vector *m){
 	
     if(verbose) {
-        printf("[-] Solving with Bi-Conjugate Gradients iterative method\n");
+        printf("\n[-] Solving with Bi-Conjugate Gradients iterative method\n");
     }
 
     // transposed A
@@ -218,8 +218,8 @@ void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_o
 	    for(int i=0;i<num_of_nodes;i++){
             rho = rho + gsl_vector_get(r_1,i)*gsl_vector_get(z,i);
 	    }
-	    if(fabs(rho) < 1e-14){
-            printf("[!] Algorithm Failure due to rho < 1e-14\n");
+	    if(fabs(rho) < DBL_EPSILON){
+            printf("[!] Algorithm failed. (rho < 1e-14)\n");
             exit(2); //algorithm failure
 	    }
         
@@ -244,14 +244,14 @@ void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_o
 	    q = product_MV(A_table,p,num_of_nodes);
 	    q_1 = product_MV(A_T,p_1,num_of_nodes);
 	    
-	    omega=0;
+	    omega = 0;
         
 	    for(int i=0;i<num_of_nodes;i++){
             omega = omega + gsl_vector_get(p_1,i)*gsl_vector_get(q,i);
 	    }
         
-	    if(fabs(omega) < 1e-14){
-            printf("[!] Algorithm Failure due to omega < 1e-14\n");
+	    if(fabs(omega) < DBL_EPSILON){
+            printf("[!] Algorithm failed. (omega < 1e-14)\n");
             exit(2); //algorithm failure
 	    }
 	    alpha = rho/omega;
@@ -263,10 +263,12 @@ void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_o
 	    }
 		
 	}
-	
+	// print the solution vector
+    printf("\nx = [\n");
 	for(int i=0;i<num_of_nodes;i++){
-	    printf("x[%d] = %f\n",i,gsl_vector_get(x,i));
+	    printf("\t%f\n",gsl_vector_get(x,i));
 	}
+    printf("]\n");
 	
 	free(r);
 	free(p);
@@ -284,7 +286,7 @@ void Bi_CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *b,double itol,int num_o
 void CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *z,double itol,int num_of_nodes,gsl_vector *m){
 	
     if(verbose) {
-        printf("[-] Solving with Conjugate Gradients iterative method\n");
+        printf("\n[-] Solving with Conjugate Gradients iterative method\n");
     }
     
 	gsl_vector *r,*p,*q,*z_1,*Ax_product;
@@ -350,9 +352,12 @@ void CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *z,double itol,int num_of_n
         
 	}
 	
+    // print the solution vector
+    printf("x = [\n");
 	for(int i=0;i<num_of_nodes;i++){
-		printf("x[%d] = %f\n",i,gsl_vector_get(x,i)); 
+		printf("\t%f\n",gsl_vector_get(x,i));
 	}
+    printf("]\n");
     
 	free(r);
 	free(p);
@@ -438,11 +443,11 @@ void solve(){
         m = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
         init_guess = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
         
-        for(int i=0;i<numof_circuit_nodes;i++){
+        for(int i=0;i < numof_circuit_nodes + numof_indie_voltage_sources;i++){
             gsl_vector_set(init_guess,i,0.0);
         }
         
-        for(int i=0;i<numof_circuit_nodes;i++){
+        for(int i=0;i < numof_circuit_nodes + numof_indie_voltage_sources;i++){
             
             if(gsl_matrix_get(A_table,i,i)!= 0){
                 gsl_vector_set(m,i,1/gsl_matrix_get(A_table,i,i));

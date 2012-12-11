@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <math.h>
+#include <float.h>
 #include <gsl/gsl_linalg.h>
 #include <pthread.h>
 #include "utarray.h"
@@ -22,6 +23,7 @@
 #include "helpers.h"
 #include "mna.h"
 #include "solvers.h"
+
 
 // CXSparse Lib
 #include "cs.h"
