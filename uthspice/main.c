@@ -23,6 +23,9 @@
 #include "mna.h"
 #include "solvers.h"
 
+// CXSparse Lib
+#include "cs.h"
+
 
 // prints a simple help message
 void print_help(const char *name)

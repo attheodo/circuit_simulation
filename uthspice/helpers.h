@@ -251,37 +251,31 @@ void parse_netlist_option(char **option_args){
 
         
     }
-    // .OPTION SPD
-    // PLOT/PRINT DC sweep option parsing
+    // .OPTION <value>
     else if(strcmp(option_args[0],".OPTIONS") == 0){
         
-        for(int i=0;i<4;i++){
-            if(option_args[i]!= NULL && strcmp(option_args[i],"") != 0){
-                
-                // SPD Option
-                if(strcmp(option_args[i],"SPD") == 0){
-                    spd = true;
-                    printf("[-] Option SPD set.\n");
+       
+        // SPD Option
+        if(strcmp(option_args[1],"SPD") == 0){
+            spd = true;
+            printf("[-] Option SPD set.\n");
 
-                }
-                // ITER
-                else if(strcmp(option_args[i],"ITER") == 0){
-                    iter = true;
-                    printf("[-] Option ITER set.\n");
-                    
-                    if(spd==true){
-                        conjgrad = true;
-                    } else {
-                        bi_conjgrad = true;
-                    }
-                }
-                // ITOL value
-                else if(strcmp(strndup(option_args[i], 4),"ITOL")==0){
-                    itol = atof(&option_args[i][5]);
-                    printf("[-] ITOL value set to: %.1e\n",itol);
-                }
-                
+        }
+        // ITER
+        else if(strcmp(option_args[1],"ITER") == 0){
+            iter = true;
+            printf("[-] Option ITER set.\n");
+            
+            if(spd==true){
+                conjgrad = true;
+            } else {
+                bi_conjgrad = true;
             }
+        }
+        // ITOL value
+        else if(strcmp(strndup(option_args[1], 4),"ITOL")==0){
+            itol = atof(&option_args[1][5]);
+            printf("[-] ITOL value set to: %.1e\n",itol);
         }
         
         option->option_type = optionTypeOther;

@@ -1,0 +1,8 @@
+options in seperate lines
+	.option spd
+	.option iter
+
+deps
+	CXSparse
+	Pthread
+	GSL 

@@ -180,6 +180,7 @@
 					"-lgslcblas",
 				);
 				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = /usr/local/include/;
 			};
 			name = Debug;
 		};
@@ -208,6 +209,7 @@
 					"-lgslcblas",
 				);
 				SDKROOT = macosx;
+				USER_HEADER_SEARCH_PATHS = /usr/local/include/;
 			};
 			name = Release;
 		};
