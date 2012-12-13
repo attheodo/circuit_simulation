@@ -134,7 +134,7 @@ int numof_circuit_nodes         = 0;
 int numof_indie_voltage_sources = 0;
 int numof_current_sources       = 0;
 
-// MNA Tables
+// MNA Matrices
 double **g_table = NULL;
 int    **b_table = NULL;
 int    **c_table = NULL;
@@ -143,6 +143,12 @@ int    **d_table = NULL;
 gsl_matrix *A_table = NULL;
 gsl_permutation *perm_matrix = NULL;
 gsl_vector *z  = NULL;
+
+// Sparse Matrices
+cs  *A_table_sparse, *C_sparse_compressed;
+css *S;
+csn *N;
+int nonzeroes = 0;
 
 // list that holds the parsed elements, should always be initialized to NULL
 element *head = NULL;

@@ -367,74 +367,15 @@ void CG(gsl_vector *x,gsl_matrix *A_table,gsl_vector *z,double itol,int num_of_n
 
 }
 
-void solve(){
+void solve_MNA(){
     
-    if(verbose){
-        struct node_data *s;
-        printf("\n");
-        for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
-            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
-        }
-        
-    }
-    
-    // Initialize G Table
-    g_table = (double **)malloc(numof_circuit_nodes * sizeof(double *));
-    for(int i=0; i < numof_circuit_nodes; i++){
-        g_table[i] = (double *)malloc(numof_circuit_nodes * sizeof(double));
-    }
-    
-    calculate__g_table(head,numof_circuit_nodes);
-    
-    // Initialize B table
-    b_table = (int **)malloc(numof_circuit_nodes * sizeof(int *));
-    for(int i=0; i < numof_circuit_nodes; i++){
-        b_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
-    }
-    
-    calculate__b_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    
-    // Initialize C table
-    c_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
-    for(int i=0; i < numof_indie_voltage_sources; i++){
-        c_table[i] = (int *)malloc(numof_circuit_nodes * sizeof(int));
-        
-    }
-    
-    calculate__c_table(numof_circuit_nodes, numof_indie_voltage_sources);
-    
-    // Initialize D table
-    d_table = (int **)malloc(numof_indie_voltage_sources * sizeof(int *));
-    for(int i=0; i < numof_indie_voltage_sources; i++){
-        d_table[i] = (int *)malloc(numof_indie_voltage_sources * sizeof(int));
-        
-    }
-    calculate__d_table(numof_indie_voltage_sources);
-    
-    A_table = gsl_matrix_alloc(numof_circuit_nodes+numof_indie_voltage_sources, numof_circuit_nodes+numof_indie_voltage_sources);
-    
-    // initialize Z table
-    z = gsl_vector_alloc(numof_circuit_nodes + numof_indie_voltage_sources);
-    
-    calculate__A_matrix(numof_circuit_nodes, numof_indie_voltage_sources);
-    create__z_vector(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
-    
-    if(verbose)print__g_table(numof_circuit_nodes);
-    if(verbose)print__b_table(numof_circuit_nodes,numof_indie_voltage_sources);
-    if(verbose)print__c_table(numof_indie_voltage_sources,numof_circuit_nodes);
-    if(verbose)print__A_matrix(numof_circuit_nodes+numof_indie_voltage_sources, numof_indie_voltage_sources+numof_circuit_nodes);
-    if(verbose)print__Z_vector(numof_circuit_nodes, numof_indie_voltage_sources);
-    
-    free(g_table);
-    free(b_table);
-    free(c_table);
-    free(d_table);
+    prepare_MNA_matrices();
     
     // non-iterative methods
     if(!bi_conjgrad && !conjgrad){
         LU_solve(numof_indie_voltage_sources+numof_circuit_nodes);
     }
-   
+    
     // conjugate gradients
     else {
         
@@ -472,11 +413,35 @@ void solve(){
         perform_DC_sweep();
     }
     
-    
     gsl_matrix_free(A_table);
     gsl_vector_free(z);
     gsl_permutation_free(perm_matrix);
+
+}
+
+void solve_sparse() {
+    prepare_sparse_matrices();
+}
+
+void solve(){
     
+    // prints the id of the node_name in the hashtable
+    if(verbose){
+        struct node_data *s;
+        printf("\n");
+        for(s=nodes_hashtable; s != NULL; s=(struct node_data*)(s->hh.next)) {
+            printf("[nodes_hashtable] key %s has id %d\n", s->node_name,s->node_num);
+        }
+    }
+    
+    // Simple matrices for MNA 
+    if(!sparse){
+        solve_MNA();
+    }
+    // use sparse matrix techniques
+    else {
+        solve_sparse();
+    }
 }
 
 

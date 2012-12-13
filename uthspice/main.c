@@ -16,17 +16,16 @@
 #include <float.h>
 #include <gsl/gsl_linalg.h>
 #include <pthread.h>
+// CXSparse Lib
+#include "cs.h"
 #include "utarray.h"
 #include "uthash.h"
 #include "utlist.h"
 #include "types.h"
 #include "helpers.h"
 #include "mna.h"
+#include "sparse.h"
 #include "solvers.h"
-
-
-// CXSparse Lib
-#include "cs.h"
 
 
 // prints a simple help message

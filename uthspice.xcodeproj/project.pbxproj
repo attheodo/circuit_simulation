@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		41D80BBF16330A5D0069AA15 /* utarray.h in Sources */ = {isa = PBXBuildFile; fileRef = 41D80BBE16330A5D0069AA15 /* utarray.h */; };
+		4162B0641678C2F300E618AB /* libcsparse.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4162B0631678C2F300E618AB /* libcsparse.a */; };
 		41E4467F161DC32500CE6EF4 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 41E4467E161DC32500CE6EF4 /* main.c */; };
 		41E44681161DC32500CE6EF4 /* uthspice.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 41E44680161DC32500CE6EF4 /* uthspice.1 */; };
 /* End PBXBuildFile section */
@@ -27,6 +27,9 @@
 
 /* Begin PBXFileReference section */
 		411B3D001643E5330092A6E3 /* solvers.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = solvers.h; sourceTree = "<group>"; };
+		4162B0621678BE1F00E618AB /* cs.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = cs.h; sourceTree = "<group>"; };
+		4162B0631678C2F300E618AB /* libcsparse.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libcsparse.a; sourceTree = "<group>"; };
+		419F54721678A7AF00EF5CCA /* sparse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sparse.h; sourceTree = "<group>"; };
 		41D80BAA1632C61A0069AA15 /* uthash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = uthash.h; sourceTree = "<group>"; };
 		41D80BAB1632C61A0069AA15 /* utlist.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = utlist.h; sourceTree = "<group>"; };
 		41D80BAF1632D7090069AA15 /* helpers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.objj.h; path = helpers.h; sourceTree = "<group>"; };
@@ -43,12 +46,22 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4162B0641678C2F300E618AB /* libcsparse.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		411591761678B9A2009A61D2 /* csparse */ = {
+			isa = PBXGroup;
+			children = (
+				4162B0621678BE1F00E618AB /* cs.h */,
+				4162B0631678C2F300E618AB /* libcsparse.a */,
+			);
+			path = csparse;
+			sourceTree = "<group>";
+		};
 		41D80BC016330A6B0069AA15 /* uthash */ = {
 			isa = PBXGroup;
 			children = (
@@ -78,11 +91,13 @@
 		41E4467D161DC32500CE6EF4 /* uthspice */ = {
 			isa = PBXGroup;
 			children = (
+				411591761678B9A2009A61D2 /* csparse */,
 				41D80BC016330A6B0069AA15 /* uthash */,
 				41E4467E161DC32500CE6EF4 /* main.c */,
 				41D80BB11632D8DB0069AA15 /* types.h */,
 				41D80BAF1632D7090069AA15 /* helpers.h */,
 				41D80BBB1632E3CA0069AA15 /* mna.h */,
+				419F54721678A7AF00EF5CCA /* sparse.h */,
 				411B3D001643E5330092A6E3 /* solvers.h */,
 				41E44680161DC32500CE6EF4 /* uthspice.1 */,
 			);
@@ -141,7 +156,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				41E4467F161DC32500CE6EF4 /* main.c in Sources */,
-				41D80BBF16330A5D0069AA15 /* utarray.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,7 +194,8 @@
 					"-lgslcblas",
 				);
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = /usr/local/include/;
+				USER_HEADER_SEARCH_PATHS = "";
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Debug;
 		};
@@ -209,7 +224,8 @@
 					"-lgslcblas",
 				);
 				SDKROOT = macosx;
-				USER_HEADER_SEARCH_PATHS = /usr/local/include/;
+				USER_HEADER_SEARCH_PATHS = "";
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Release;
 		};
@@ -217,7 +233,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/uthspice\"",
+					"\"$(SRCROOT)/uthspice/csparse\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Debug;
 		};
@@ -225,7 +247,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/uthspice\"",
+					"\"$(SRCROOT)/uthspice/csparse\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				VALID_ARCHS = "i386 x86_64";
 			};
 			name = Release;
 		};

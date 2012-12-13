@@ -277,6 +277,11 @@ void parse_netlist_option(char **option_args){
             itol = atof(&option_args[1][5]);
             printf("[-] ITOL value set to: %.1e\n",itol);
         }
+        // Use sparse matrices
+        else if(strcmp(option_args[1],"SPARSE") == 0){
+            sparse = true;
+            printf("[-] Option SPARSE set.\n");
+        }
         
         option->option_type = optionTypeOther;
         char *tmp = strdup(option_args[1]);
@@ -365,6 +370,32 @@ void *parse_input_netlist(void *thread_args) {
                 parsed_element->bulk_terminal = tokens[4];
                 parsed_element->gate_length = atof(tokens[6]+2);
                 parsed_element->gate_width = atof(tokens[7]+2);
+                
+                // count VOLTAGE SOURCES contributions in A matrix
+                if(parsed_element->element_type == elementTypeVoltageSource){
+                    
+                    // voltage source is not grounded
+                    if(strcmp(parsed_element->first_terminal,"0") != 0 && strcmp(parsed_element->second_terminal,"0") != 0){
+                        nonzeroes = nonzeroes + 4; // 2 contributions in B matrix and 2 contributions in C
+                    }
+                    // voltage source is grounded
+                    else {
+                        nonzeroes = nonzeroes + 2; // 1 contribution in B matrix and 1 contribution in C
+                    }
+                }
+                // count RESISTORS contributions in A matrix
+                if(parsed_element->element_type == elementTypeResistance){
+                    
+                    // resistor is not grounded
+                    if(strcmp(parsed_element->first_terminal,"0") != 0 && strcmp(parsed_element->second_terminal,"0") != 0){
+                        nonzeroes = nonzeroes + 4; // 4 contributions in A matrix
+                    }
+                    // resistor is grounded
+                    else {
+                        nonzeroes = nonzeroes + 1; // 1 contribution in A matrix (somewhere on the diagonal)
+                    }
+                }
+
                 
                 // add it to the list
                 if (pthread_rwlock_wrlock(&elements_list_lock) != 0) {

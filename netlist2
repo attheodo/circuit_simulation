@@ -12,6 +12,6 @@ R5 node_2 node_6 1.5
 R6 node_3 node_4 0.1
 R7 node_8 0 1e3
 R8 node_4 0 10
-L1 node_1 node_2 10 
-L2 node_2 node_3 11
-
+*L1 node_1 node_2 10 
+*L2 node_2 node_3 11
+*.OPTIONS SPARSE
