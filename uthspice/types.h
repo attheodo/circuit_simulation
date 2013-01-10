@@ -6,7 +6,7 @@
 //
 
 // various definitions
-#define MAX_TOKENS_IN_LINE 8
+#define MAX_TOKENS_IN_LINE 15
 #define MAX_TOKEN_LEN      20
 
 #define GROUND 0
@@ -32,6 +32,10 @@ typedef struct element {
     char *area;
 	
     double value;
+    
+    // transient spec
+    int transient_spec_type;
+    double *transient_values;
     
 	struct element *next;
     
@@ -86,6 +90,48 @@ typedef enum {
     elementTypeOption
     
 } element_type;
+
+// enum for transient specs type
+typedef enum {
+
+    transientTypeExp = 0,
+    transientTypeSin,
+    transientTypePulse,
+    transientTypePwl
+
+} transient_spec_type;
+
+// enum indexes for EXP transient values
+typedef enum {
+    exp_i1 = 0,
+    exp_i2,
+    exp_td1,
+    exp_tc1,
+    exp_td2,
+    exp_tc2
+
+} transient_exp_values;
+
+// enum indexes for SIN transient values
+typedef enum {
+    sin_i1 = 0,
+    sin_ia,
+    sin_fr,
+    sin_td,
+    sin_df,
+    sin_ph
+} transient_sin_values;
+
+// enum indexes for PULSE transient values
+typedef enum {
+    pulse_i1 = 0,
+    pulse_i2,
+    pulse_td,
+    pulse_tr,
+    pulse_tf,
+    pulse_pw,
+    pulse_per
+} transient_pulse_values;
 
 typedef enum {
 
