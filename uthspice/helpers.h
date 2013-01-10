@@ -77,6 +77,34 @@ element_type element_type_for_string(char element_as_string){
     return -1;
 }
 
+transient_spec_type transient_type_for_string(char *type){
+   
+    if(strcmp(type,"EXP") == 0){
+        
+        return transientTypeExp;
+    
+    }
+    else if(strcmp(type,"SIN") == 0){
+    
+        return transientTypeSin;
+    
+    }
+    else if(strcmp(type,"PULSE") == 0){
+    
+        return transientTypePulse;
+    
+    }
+    else if(strcmp(type,"PWL") == 0){
+    
+        return transientTypePwl;
+    
+    } else {
+        return -1;
+    }
+
+
+}
+
 #pragma mark - Parsing Related
 
 // opens a netlist file and counts the number of lines in it
@@ -370,6 +398,12 @@ void *parse_input_netlist(void *thread_args) {
                 parsed_element->bulk_terminal = tokens[4];
                 parsed_element->gate_length = atof(tokens[6]+2);
                 parsed_element->gate_width = atof(tokens[7]+2);
+                
+                // transient specifications
+                if(transient_type_for_string(tokens[4]) != -1){
+                    printf("[+] Element \"%s\" has transient specification of type \"%s\" (transient_spec_type: %d)\n",parsed_element->element_name,tokens[4],transient_type_for_string(tokens[4]));
+                    parsed_element->transient_spec_type = transient_type_for_string(tokens[4]);
+                }
                 
                 // count VOLTAGE SOURCES contributions in A matrix
                 if(parsed_element->element_type == elementTypeVoltageSource){
