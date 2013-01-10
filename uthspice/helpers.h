@@ -105,6 +105,21 @@ transient_spec_type transient_type_for_string(char *type){
 
 }
 
+// strips starting and trailing parenthesis from a token and returns
+// it as a float
+float sanitize_value(char *token){
+    // strip the starting parenthesis 
+    if (token[0] == '(')
+        memmove(token, token+1, strlen(token));
+    
+    // strip the trailing
+    if(token[strlen(token)-1] == ')')
+        token[strlen(token)-1] = 0;
+    
+    return atof(token);
+
+}
+
 #pragma mark - Parsing Related
 
 // opens a netlist file and counts the number of lines in it
@@ -401,8 +416,94 @@ void *parse_input_netlist(void *thread_args) {
                 
                 // transient specifications
                 if(transient_type_for_string(tokens[4]) != -1){
-                    printf("[+] Element \"%s\" has transient specification of type \"%s\" (transient_spec_type: %d)\n",parsed_element->element_name,tokens[4],transient_type_for_string(tokens[4]));
+                    
+                    // set transient spec type
+                    if (verbose) printf("\n[-] Element \"%s\" has transient specification of type \"%s\" (transient_spec_type: %d)\n",parsed_element->element_name,tokens[4],transient_type_for_string(tokens[4]));
                     parsed_element->transient_spec_type = transient_type_for_string(tokens[4]);
+                    
+                    // read transient spec values
+                    switch(parsed_element->transient_spec_type){
+                        
+                        // EXP
+                        case transientTypeExp:
+                            parsed_element->transient_values = (double *)malloc(sizeof(double) * 6);
+                           
+                            parsed_element->transient_values[exp_i1] = sanitize_value(tokens[5]);
+                            parsed_element->transient_values[exp_i2] = sanitize_value(tokens[6]);
+                            parsed_element->transient_values[exp_td1] = sanitize_value(tokens[7]);
+                            parsed_element->transient_values[exp_tc1] = sanitize_value(tokens[8]);
+                            parsed_element->transient_values[exp_td2] = sanitize_value(tokens[9]);
+                            parsed_element->transient_values[exp_tc2] = sanitize_value(tokens[10]);
+                            
+                            if (verbose) printf("\ti1=%.1f \ti2=%.1f \ttd1=%.1f \ttc1=%.1f \ttd2=%.1f \ttc2=%.1f\n\n",parsed_element->transient_values[exp_i1],parsed_element->transient_values[exp_i2],parsed_element->transient_values[exp_td1],parsed_element->transient_values[exp_tc1],parsed_element->transient_values[exp_td2],parsed_element->transient_values[exp_tc2]);
+                            
+                            break;
+                        
+                        // SIN
+                        case transientTypeSin:
+                            parsed_element->transient_values = (double *)malloc(sizeof(double) * 6);
+                            
+                            parsed_element->transient_values[sin_i1] = sanitize_value(tokens[5]);
+                            parsed_element->transient_values[sin_ia] = sanitize_value(tokens[6]);
+                            parsed_element->transient_values[sin_fr] = sanitize_value(tokens[7]);
+                            parsed_element->transient_values[sin_td] = sanitize_value(tokens[8]);
+                            parsed_element->transient_values[sin_df] = sanitize_value(tokens[9]);
+                            parsed_element->transient_values[sin_ph] = sanitize_value(tokens[10]);
+                            
+                            if (verbose) printf("\ti1=%.1f \tia=%.1f \tfr=%.1f \ttd=%.1f \tdf=%.1f \tph=%.1f\n\n",parsed_element->transient_values[sin_i1],parsed_element->transient_values[sin_ia],parsed_element->transient_values[sin_fr],parsed_element->transient_values[sin_td],parsed_element->transient_values[sin_df],parsed_element->transient_values[sin_ph]);
+
+                            break;
+                            
+                        // PULSE
+                        case transientTypePulse:
+
+                            parsed_element->transient_values = (double *)malloc(sizeof(double) * 7);
+                            
+                            parsed_element->transient_values[pulse_i1] = sanitize_value(tokens[5]);
+                            parsed_element->transient_values[pulse_i2] = sanitize_value(tokens[6]);
+                            parsed_element->transient_values[pulse_td] = sanitize_value(tokens[7]);
+                            parsed_element->transient_values[pulse_tr] = sanitize_value(tokens[8]);
+                            parsed_element->transient_values[pulse_tf] = sanitize_value(tokens[9]);
+                            parsed_element->transient_values[pulse_pw] = sanitize_value(tokens[10]);
+                            parsed_element->transient_values[pulse_per] = sanitize_value(tokens[11]);
+
+                            
+                            if (verbose) printf("\ti1=%.1f \ti2=%.1f \ttd=%.1f \ttr=%.1f \ttf=%.1f \tpw=%.1f \tper=%.1f\n\n",parsed_element->transient_values[pulse_i1],parsed_element->transient_values[pulse_i2],parsed_element->transient_values[pulse_td],parsed_element->transient_values[pulse_tr],parsed_element->transient_values[pulse_tf],parsed_element->transient_values[pulse_pw],parsed_element->transient_values[pulse_per]);
+
+                            
+                            break;
+                            
+                        // PWL
+                        case transientTypePwl:{
+                            
+                            // find number of time/voltage or time/current tuples
+                            int num_of_tokens = 0;
+                            while(tokens[num_of_tokens] != NULL){
+                                num_of_tokens++;
+                            }
+                            
+                            parsed_element->transient_values = (double *)malloc(sizeof(double) * num_of_tokens - 5);
+                            
+                            printf("\t");
+                            for(int token_index=5, i=0; token_index < num_of_tokens; i++, token_index++){
+                                
+                                parsed_element->transient_values[i] = sanitize_value(tokens[token_index]);
+                                
+                                if(i%2 == 0){
+                                    printf("(");
+                                    printf("%f,",sanitize_value(tokens[token_index]));
+                                }
+                                
+                                if(i%2 != 0){
+                                    printf(" %f",sanitize_value(tokens[token_index]));
+                                    printf(") ");
+                                }
+                            }
+                            printf("\n");
+                            break;
+                        }
+
+                    }
                 }
                 
                 // count VOLTAGE SOURCES contributions in A matrix
