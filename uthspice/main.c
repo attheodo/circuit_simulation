@@ -78,7 +78,7 @@ int main(int argc, char * argv[])
     int lines_in_netlist = numOfNetlistLines(netlist_filename);
     
     // numof processor cores available for exploitation
-    int numofcpus = 1;//(int)sysconf(_SC_NPROCESSORS_ONLN);
+    int numofcpus = 2;//(int)sysconf(_SC_NPROCESSORS_ONLN);
     
     pthread_t parsing_threads[numofcpus];
     struct thread_data parsing_threads__data_array[numofcpus];

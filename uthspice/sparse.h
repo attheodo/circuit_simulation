@@ -16,6 +16,10 @@ void prepare_sparse_matrices() {
     matrix_dimension = numof_circuit_nodes + numof_indie_voltage_sources;
     A_table_sparse = cs_spalloc(matrix_dimension,matrix_dimension,nonzeroes,1,1);
     
+    // initialize Z table
+    z = gsl_vector_alloc(matrix_dimension);
+    create__z_vector(numof_circuit_nodes, numof_indie_voltage_sources,numof_current_sources);
+    
     // populate the A matrix directly
     LL_FOREACH(head, elem){
         
