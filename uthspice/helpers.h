@@ -326,6 +326,21 @@ void parse_netlist_option(char **option_args){
             printf("[-] Option SPARSE set.\n");
         }
         
+        // transient analysis method
+        else if(strcmp(strndup(option_args[1], 6),"METHOD") == 0){
+            
+            // set Backward-Euler method for transient analysis
+            if(strcmp(strndup(option_args[1]+7,2),"BE") == 0){
+              
+                backward_euler = true;
+                trapezoidal = false;
+            
+            // set Trapezoidal method for transient analysis
+            } else if(strcmp(strndup(option_args[1]+7,2),"TR") == 0){
+                trapezoidal = true;
+            }
+        }
+        
         option->option_type = optionTypeOther;
         char *tmp = strdup(option_args[1]);
         option->other_option_field = tmp;
